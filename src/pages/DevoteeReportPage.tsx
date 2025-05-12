@@ -20,6 +20,7 @@ interface ReportEntry {
   japa: number;
   lecture: number;
   temple_visit: boolean;
+  temple_visit_type: string;
   dailyTotal: number;
 }
 
@@ -65,6 +66,7 @@ const DevoteeReportPage = () => {
         japa: entry.japa,
         lecture: entry.lecture,
         temple_visit: entry.temple_visit,
+        temple_visit_type: entry.temple_visit_type,
         dailyTotal: entry.mangla + entry.japa + entry.lecture
       });
     });
@@ -101,9 +103,8 @@ const DevoteeReportPage = () => {
     }
   }, [selectedDevotee, startDate, endDate, entries]);
   
-  const getScoreColor = (score: number) => {
-    if (score === 1) return 'text-gray-900';
-    if (score === 0.5) return 'text-gray-900';
+  const getScoreColor = (score: number, templeVisitType: string, activity: 'mangla' | 'japa' | 'lecture') => {
+    if (templeVisitType === activity) return 'text-green-600';
     return 'text-gray-900';
   };
   
@@ -231,9 +232,9 @@ const DevoteeReportPage = () => {
                   <tr key={index}>
                     <td>{format(parseISO(entry.date), 'dd MMM yyyy')}</td>
                     <td>{entry.temple_visit ? 'YES' : 'NO'}</td>
-                    <td className={getScoreColor(entry.mangla)}>{entry.mangla}</td>
-                    <td className={getScoreColor(entry.japa)}>{entry.japa}</td>
-                    <td className={getScoreColor(entry.lecture)}>{entry.lecture}</td>
+                    <td className={getScoreColor(entry.mangla, entry.temple_visit_type, 'mangla')}>{entry.mangla}</td>
+                    <td className={getScoreColor(entry.japa, entry.temple_visit_type, 'japa')}>{entry.japa}</td>
+                    <td className={getScoreColor(entry.lecture, entry.temple_visit_type, 'lecture')}>{entry.lecture}</td>
                     <td className="font-medium">{entry.dailyTotal}/3</td>
                   </tr>
                 ))}
