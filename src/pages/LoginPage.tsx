@@ -5,8 +5,6 @@ import { LogIn, KeyRound, Loader2, Shield } from 'lucide-react';
 import toast from 'react-hot-toast';
 import supabase from '../lib/supabase';
 
-const SUPER_ADMIN_KEY = 'SALWGP108';
-
 interface SystemInfo {
   id: string;
   name: string;
@@ -24,6 +22,8 @@ const LoginPage = () => {
   const [systems, setSystems] = useState<SystemInfo[]>([]);
   const [editingSystem, setEditingSystem] = useState<string | null>(null);
   const [newAdminName, setNewAdminName] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [deleteConfirmPassword, setDeleteConfirmPassword] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -55,7 +55,8 @@ const LoginPage = () => {
   };
 
   const handleSuperAdminLogin = async () => {
-    if (superAdminKey !== SUPER_ADMIN_KEY) {
+    const storedMasterKey = localStorage.getItem('masterKey');
+    if (!storedMasterKey || superAdminKey !== storedMasterKey) {
       toast.error('Invalid super admin key');
       return;
     }
@@ -79,10 +80,6 @@ const LoginPage = () => {
 
       if (systemsError) throw systemsError;
       setSystems(systemsData || []);
-      
-      // Generate new master key
-      const newMasterKey = generateRandomKey(9);
-      localStorage.setItem('masterKey', newMasterKey);
       
     } catch (error) {
       console.error('Error fetching systems:', error);
@@ -133,7 +130,9 @@ const LoginPage = () => {
   };
 
   const handleDeleteSystem = async (systemId: string) => {
-    if (!confirm('Are you sure you want to delete this system? This action cannot be undone.')) {
+    const storedMasterKey = localStorage.getItem('masterKey');
+    if (!storedMasterKey || deleteConfirmPassword !== storedMasterKey) {
+      toast.error('Invalid super admin password');
       return;
     }
 
@@ -147,19 +146,12 @@ const LoginPage = () => {
 
       toast.success('System deleted successfully');
       setSystems(systems.filter(s => s.id !== systemId));
+      setConfirmDelete(null);
+      setDeleteConfirmPassword('');
     } catch (error) {
       console.error('Error deleting system:', error);
       toast.error('Failed to delete system');
     }
-  };
-
-  const generateRandomKey = (length: number): string => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let result = '';
-    for (let i = 0; i < length; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
   };
 
   return (
@@ -184,7 +176,7 @@ const LoginPage = () => {
               </button>
             </div>
 
-            {superAdminKey !== SUPER_ADMIN_KEY ? (
+            {!localStorage.getItem('masterKey') || superAdminKey !== localStorage.getItem('masterKey') ? (
               <div className="max-w-md mx-auto">
                 <input
                   type="password"
@@ -205,7 +197,7 @@ const LoginPage = () => {
               <div className="space-y-6">
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <p className="text-blue-800 font-medium flex items-center justify-between">
-                    <span>Current Master Key: {localStorage.getItem('masterKey') || 'Not generated'}</span>
+                    <span>Current Master Key: {localStorage.getItem('masterKey')}</span>
                     <span className="text-sm text-blue-600">(Contact Super Admin for Master Key)</span>
                   </p>
                 </div>
@@ -285,12 +277,39 @@ const LoginPage = () => {
                               >
                                 Edit Admin
                               </button>
-                              <button
-                                onClick={() => handleDeleteSystem(system.id)}
-                                className="text-red-600 hover:text-red-800"
-                              >
-                                Delete
-                              </button>
+                              {confirmDelete === system.id ? (
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="password"
+                                    value={deleteConfirmPassword}
+                                    onChange={(e) => setDeleteConfirmPassword(e.target.value)}
+                                    placeholder="Enter super admin key"
+                                    className="input input-sm w-40"
+                                  />
+                                  <button
+                                    onClick={() => handleDeleteSystem(system.id)}
+                                    className="btn btn-sm btn-error"
+                                  >
+                                    Confirm
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setConfirmDelete(null);
+                                      setDeleteConfirmPassword('');
+                                    }}
+                                    className="btn btn-sm btn-outline"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() => setConfirmDelete(system.id)}
+                                  className="text-red-600 hover:text-red-800"
+                                >
+                                  Delete
+                                </button>
+                              )}
                             </div>
                           </td>
                         </tr>

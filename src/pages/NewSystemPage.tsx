@@ -4,8 +4,6 @@ import { Shield, ArrowLeft, Loader2 } from 'lucide-react';
 import supabase from '../lib/supabase';
 import toast from 'react-hot-toast';
 
-const MASTER_KEY = 'CNSWGP108';
-
 const NewSystemPage = () => {
   const [masterKey, setMasterKey] = useState('');
   const [systemName, setSystemName] = useState('');
@@ -21,8 +19,8 @@ const NewSystemPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate master key
-    if (masterKey !== MASTER_KEY) {
+    const storedMasterKey = localStorage.getItem('masterKey');
+    if (!storedMasterKey || masterKey !== storedMasterKey) {
       toast.error('Invalid master key');
       return;
     }
@@ -116,10 +114,6 @@ const NewSystemPage = () => {
       }
       
       if (data) {
-        // Generate new master key
-        const newMasterKey = generateRandomKey(9);
-        localStorage.setItem('masterKey', newMasterKey);
-        
         toast.success('Tracking system created successfully!');
         toast.success(`Your authentication code is: ${authCode}`);
         
@@ -134,15 +128,6 @@ const NewSystemPage = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const generateRandomKey = (length: number): string => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let result = '';
-    for (let i = 0; i < length; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
   };
 
   return (
