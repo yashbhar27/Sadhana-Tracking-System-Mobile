@@ -229,7 +229,8 @@ const AllEntriesPage = () => {
   };
 
   const getScoreColor = (score: number, templeVisitType: string, activity: 'mangla' | 'japa' | 'lecture') => {
-    if (templeVisitType === activity) return 'text-green-600 font-medium';
+    const types = templeVisitType.split('-');
+    if (types.includes(activity)) return 'text-green-600 font-medium';
     return 'text-gray-900';
   };
   
@@ -439,7 +440,9 @@ const AllEntriesPage = () => {
                           {entry.devotee_name}
                         </td>
                         <td className={getScoreColor(entry.mangla, entry.temple_visit_type, 'mangla')}>
-                          {entry.mangla}
+                          {entry.mang
+
+la}
                         </td>
                         <td className={getScoreColor(entry.japa, entry.temple_visit_type, 'japa')}>
                           {entry.japa}

@@ -122,37 +122,57 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
     const numericValue = parseFloat(value);
     const isTempleVisit = value.includes('T');
 
+    // Update the activity value
     switch (activity) {
       case 'mangla':
         setMangla(numericValue);
         if (isTempleVisit) {
           setTempleVisit(true);
-          setTempleVisitType('mangla');
-        } else if (templeVisitType === 'mangla') {
-          setTempleVisit(false);
-          setTempleVisitType('none');
+          if (!templeVisitType.includes('japa') && !templeVisitType.includes('lecture')) {
+            setTempleVisitType('mangla');
+          }
         }
         break;
       case 'japa':
         setJapa(numericValue);
         if (isTempleVisit) {
           setTempleVisit(true);
-          setTempleVisitType('japa');
-        } else if (templeVisitType === 'japa') {
-          setTempleVisit(false);
-          setTempleVisitType('none');
+          if (!templeVisitType.includes('mangla') && !templeVisitType.includes('lecture')) {
+            setTempleVisitType('japa');
+          }
         }
         break;
       case 'lecture':
         setLecture(numericValue);
         if (isTempleVisit) {
           setTempleVisit(true);
-          setTempleVisitType('lecture');
-        } else if (templeVisitType === 'lecture') {
-          setTempleVisit(false);
-          setTempleVisitType('none');
+          if (!templeVisitType.includes('mangla') && !templeVisitType.includes('japa')) {
+            setTempleVisitType('lecture');
+          }
         }
         break;
+    }
+
+    // Update temple visit type based on all activities
+    if (isTempleVisit) {
+      let types = [];
+      if (activity === 'mangla' || (templeVisitType.includes('mangla') && activity !== 'mangla')) types.push('mangla');
+      if (activity === 'japa' || (templeVisitType.includes('japa') && activity !== 'japa')) types.push('japa');
+      if (activity === 'lecture' || (templeVisitType.includes('lecture') && activity !== 'lecture')) types.push('lecture');
+      
+      if (types.length > 0) {
+        setTempleVisitType(types.join('-') as any);
+      }
+    } else {
+      // Remove this activity from temple visit type if it exists
+      const currentTypes = templeVisitType.split('-');
+      const updatedTypes = currentTypes.filter(t => t !== activity);
+      if (updatedTypes.length === 0) {
+        setTempleVisit(false);
+        setTempleVisitType('none');
+      } else {
+        setTempleVisitType(updatedTypes.join('-') as any);
+      }
     }
   };
 
@@ -237,7 +257,7 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
                   </label>
                   <select
                     id="mangla"
-                    value={`${mangla}${templeVisitType === 'mangla' ? 'T' : ''}`}
+                    value={`${mangla}${templeVisitType.includes('mangla') ? 'T' : ''}`}
                     onChange={(e) => handleActivityChange('mangla', e.target.value)}
                     className="select"
                   >
@@ -256,7 +276,7 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
                   </label>
                   <select
                     id="japa"
-                    value={`${japa}${templeVisitType === 'japa' ? 'T' : ''}`}
+                    value={`${japa}${templeVisitType.includes('japa') ? 'T' : ''}`}
                     onChange={(e) => handleActivityChange('japa', e.target.value)}
                     className="select"
                   >
@@ -275,7 +295,7 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
                   </label>
                   <select
                     id="lecture"
-                    value={`${lecture}${templeVisitType === 'lecture' ? 'T' : ''}`}
+                    value={`${lecture}${templeVisitType.includes('lecture') ? 'T' : ''}`}
                     onChange={(e) => handleActivityChange('lecture', e.target.value)}
                     className="select"
                   >

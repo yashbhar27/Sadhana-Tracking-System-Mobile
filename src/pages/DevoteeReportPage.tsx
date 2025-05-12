@@ -104,7 +104,8 @@ const DevoteeReportPage = () => {
   }, [selectedDevotee, startDate, endDate, entries]);
   
   const getScoreColor = (score: number, templeVisitType: string, activity: 'mangla' | 'japa' | 'lecture') => {
-    if (templeVisitType === activity) return 'text-green-600';
+    const types = templeVisitType.split('-');
+    if (types.includes(activity)) return 'text-green-600';
     return 'text-gray-900';
   };
   
