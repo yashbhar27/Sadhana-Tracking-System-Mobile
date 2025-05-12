@@ -239,7 +239,7 @@ export const SystemProvider = ({ children }: { children: ReactNode }) => {
       const { data: existingEntries } = await supabase
         .from('entries')
         .select('id')
-        .eq('devotee_id', devotee_id)
+        .eq('devotee_id', devoteeId)
         .eq('date', date)
         .eq('tracking_system_id', user.systemId);
       
