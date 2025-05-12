@@ -229,7 +229,7 @@ const AllEntriesPage = () => {
   };
 
   const getScoreColor = (score: number, templeVisitType: string, activity: 'mangla' | 'japa' | 'lecture') => {
-    if (templeVisitType === activity) return 'text-green-600';
+    if (templeVisitType === activity) return 'text-green-600 font-medium';
     return 'text-gray-900';
   };
   
