@@ -11,6 +11,7 @@ interface SystemInfo {
   auth_code: string;
   admin_password: string;
   admin_name: string | null;
+  master_key: string;
   devotees: { name: string; is_resident: boolean }[];
 }
 
@@ -55,8 +56,7 @@ const LoginPage = () => {
   };
 
   const handleSuperAdminLogin = async () => {
-    const storedMasterKey = localStorage.getItem('masterKey');
-    if (!storedMasterKey || superAdminKey !== storedMasterKey) {
+    if (superAdminKey !== 'SALWGP108') {
       toast.error('Invalid super admin key');
       return;
     }
@@ -71,6 +71,7 @@ const LoginPage = () => {
           auth_code,
           admin_password,
           admin_name,
+          master_key,
           devotees (
             name,
             is_resident
@@ -116,6 +117,7 @@ const LoginPage = () => {
           auth_code,
           admin_password,
           admin_name,
+          master_key,
           devotees (
             name,
             is_resident
@@ -130,8 +132,7 @@ const LoginPage = () => {
   };
 
   const handleDeleteSystem = async (systemId: string) => {
-    const storedMasterKey = localStorage.getItem('masterKey');
-    if (!storedMasterKey || deleteConfirmPassword !== storedMasterKey) {
+    if (deleteConfirmPassword !== 'SALWGP108') {
       toast.error('Invalid super admin password');
       return;
     }
@@ -176,7 +177,7 @@ const LoginPage = () => {
               </button>
             </div>
 
-            {!localStorage.getItem('masterKey') || superAdminKey !== localStorage.getItem('masterKey') ? (
+            {superAdminKey !== 'SALWGP108' ? (
               <div className="max-w-md mx-auto">
                 <input
                   type="password"
@@ -195,13 +196,6 @@ const LoginPage = () => {
               </div>
             ) : (
               <div className="space-y-6">
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <p className="text-blue-800 font-medium flex items-center justify-between">
-                    <span>Current Master Key: {localStorage.getItem('masterKey')}</span>
-                    <span className="text-sm text-blue-600">(Contact Super Admin for Master Key)</span>
-                  </p>
-                </div>
-
                 <div className="overflow-x-auto">
                   <table className="table">
                     <thead>
@@ -210,6 +204,7 @@ const LoginPage = () => {
                         <th>Auth Code</th>
                         <th>Admin Password</th>
                         <th>Admin Name</th>
+                        <th>Master Key</th>
                         <th>Devotees</th>
                         <th>Actions</th>
                       </tr>
@@ -250,6 +245,7 @@ const LoginPage = () => {
                               <span>{system.admin_name || 'Not set'}</span>
                             )}
                           </td>
+                          <td>{system.master_key}</td>
                           <td>
                             <details className="cursor-pointer">
                               <summary>{system.devotees?.length || 0} devotees</summary>

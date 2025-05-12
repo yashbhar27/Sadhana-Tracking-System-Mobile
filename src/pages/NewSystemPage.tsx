@@ -19,8 +19,7 @@ const NewSystemPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const storedMasterKey = localStorage.getItem('masterKey');
-    if (!storedMasterKey || masterKey !== storedMasterKey) {
+    if (masterKey !== 'SALWGP108') {
       toast.error('Invalid master key');
       return;
     }
@@ -92,6 +91,9 @@ const NewSystemPage = () => {
         setIsSubmitting(false);
         return;
       }
+
+      // Generate a new random master key
+      const newMasterKey = Math.random().toString(36).substring(2, 15).toUpperCase();
       
       // Create new system
       const { data, error: createError } = await supabase
@@ -102,7 +104,8 @@ const NewSystemPage = () => {
           admin_name: adminName,
           admin_password: adminPassword,
           security_question: securityQuestion,
-          security_answer: securityAnswer
+          security_answer: securityAnswer,
+          master_key: newMasterKey
         }])
         .select()
         .single();
@@ -116,6 +119,7 @@ const NewSystemPage = () => {
       if (data) {
         toast.success('Tracking system created successfully!');
         toast.success(`Your authentication code is: ${authCode}`);
+        toast.success('The master key for this system will be available in the super admin panel');
         
         // Navigate to login page after a short delay
         setTimeout(() => {
