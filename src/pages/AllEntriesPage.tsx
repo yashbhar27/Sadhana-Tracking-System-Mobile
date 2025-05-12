@@ -440,9 +440,7 @@ const AllEntriesPage = () => {
                           {entry.devotee_name}
                         </td>
                         <td className={getScoreColor(entry.mangla, entry.temple_visit_type, 'mangla')}>
-                          {entry.mang
-
-la}
+                          {entry.mangla}
                         </td>
                         <td className={getScoreColor(entry.japa, entry.temple_visit_type, 'japa')}>
                           {entry.japa}
