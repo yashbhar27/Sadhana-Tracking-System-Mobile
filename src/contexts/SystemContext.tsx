@@ -27,6 +27,7 @@ interface Entry {
   japa: number;
   lecture: number;
   temple_visit: boolean;
+  temple_visit_type: 'none' | 'normal' | 'mangla' | 'japa' | 'lecture';
   devotee_name?: string;
 }
 
@@ -40,8 +41,25 @@ interface SystemContextType {
   addDevotee: (name: string, isResident: boolean) => Promise<boolean>;
   updateDevotee: (id: string, name: string, isResident: boolean) => Promise<boolean>;
   deleteDevotee: (id: string) => Promise<boolean>;
-  addEntry: (devoteeId: string, date: string, mangla: number, japa: number, lecture: number, templeVisit: boolean) => Promise<boolean>;
-  updateEntry: (id: string, devoteeId: string, date: string, mangla: number, japa: number, lecture: number, templeVisit: boolean) => Promise<boolean>;
+  addEntry: (
+    devoteeId: string, 
+    date: string, 
+    mangla: number, 
+    japa: number, 
+    lecture: number, 
+    templeVisit: boolean,
+    templeVisitType: 'none' | 'normal' | 'mangla' | 'japa' | 'lecture'
+  ) => Promise<boolean>;
+  updateEntry: (
+    id: string,
+    devoteeId: string, 
+    date: string, 
+    mangla: number, 
+    japa: number, 
+    lecture: number, 
+    templeVisit: boolean,
+    templeVisitType: 'none' | 'normal' | 'mangla' | 'japa' | 'lecture'
+  ) => Promise<boolean>;
   deleteEntry: (id: string) => Promise<boolean>;
   updateSystemSettings: (updates: Partial<System>) => Promise<boolean>;
 }
@@ -132,6 +150,7 @@ export const SystemProvider = ({ children }: { children: ReactNode }) => {
           japa,
           lecture,
           temple_visit,
+          temple_visit_type,
           devotees (
             name
           )
@@ -149,6 +168,7 @@ export const SystemProvider = ({ children }: { children: ReactNode }) => {
         japa: entry.japa,
         lecture: entry.lecture,
         temple_visit: entry.temple_visit || false,
+        temple_visit_type: entry.temple_visit_type || 'none',
         devotee_name: entry.devotees?.name
       }));
       
@@ -230,7 +250,8 @@ export const SystemProvider = ({ children }: { children: ReactNode }) => {
     mangla: number, 
     japa: number, 
     lecture: number,
-    templeVisit: boolean
+    templeVisit: boolean,
+    templeVisitType: 'none' | 'normal' | 'mangla' | 'japa' | 'lecture'
   ): Promise<boolean> => {
     if (!user) return false;
     
@@ -245,7 +266,16 @@ export const SystemProvider = ({ children }: { children: ReactNode }) => {
       
       if (existingEntries && existingEntries.length > 0) {
         // Update existing entry
-        return updateEntry(existingEntries[0].id, devoteeId, date, mangla, japa, lecture, templeVisit);
+        return updateEntry(
+          existingEntries[0].id, 
+          devoteeId, 
+          date, 
+          mangla, 
+          japa, 
+          lecture, 
+          templeVisit,
+          templeVisitType
+        );
       }
       
       const devotee = devotees.find(d => d.id === devoteeId);
@@ -259,6 +289,7 @@ export const SystemProvider = ({ children }: { children: ReactNode }) => {
             japa, 
             lecture,
             temple_visit: templeVisit,
+            temple_visit_type: templeVisitType,
             tracking_system_id: user.systemId
           }
         ])
@@ -288,7 +319,8 @@ export const SystemProvider = ({ children }: { children: ReactNode }) => {
     mangla: number, 
     japa: number, 
     lecture: number,
-    templeVisit: boolean
+    templeVisit: boolean,
+    templeVisitType: 'none' | 'normal' | 'mangla' | 'japa' | 'lecture'
   ): Promise<boolean> => {
     if (!user) return false;
     
@@ -302,7 +334,8 @@ export const SystemProvider = ({ children }: { children: ReactNode }) => {
           mangla, 
           japa, 
           lecture,
-          temple_visit: templeVisit
+          temple_visit: templeVisit,
+          temple_visit_type: templeVisitType
         })
         .eq('id', id)
         .eq('tracking_system_id', user.systemId);
@@ -319,6 +352,7 @@ export const SystemProvider = ({ children }: { children: ReactNode }) => {
             japa, 
             lecture,
             temple_visit: templeVisit,
+            temple_visit_type: templeVisitType,
             devotee_name: devotee?.name
           };
         }

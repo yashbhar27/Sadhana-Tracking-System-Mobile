@@ -13,6 +13,7 @@ interface CSVEntry {
   japa: number;
   lecture: number;
   temple_visit: boolean;
+  temple_visit_type: string;
 }
 
 const AllEntriesPage = () => {
@@ -122,9 +123,9 @@ const AllEntriesPage = () => {
       let successCount = 0;
       let errorCount = 0;
       
-      // Process each row
+      //Process each row
       for (const row of dataRows) {
-        const [date, devotee_name, mangla_str, japa_str, lecture_str, temple_visit_str] = row.split(',').map(c => c.trim());
+        const [date, devotee_name, mangla_str, japa_str, lecture_str, temple_visit_str, temple_visit_type] = row.split(',').map(c => c.trim());
         
         // Find devotee by name
         const devotee = devotees.find(d => d.name.toLowerCase() === devotee_name.toLowerCase());
@@ -148,7 +149,15 @@ const AllEntriesPage = () => {
         }
         
         try {
-          const success = await addEntry(devotee.id, date, mangla, japa, lecture, temple_visit);
+          const success = await addEntry(
+            devotee.id, 
+            date, 
+            mangla, 
+            japa, 
+            lecture, 
+            temple_visit,
+            temple_visit_type as 'none' | 'normal' | 'mangla' | 'japa' | 'lecture'
+          );
           if (success) {
             successCount++;
           } else {
@@ -186,9 +195,9 @@ const AllEntriesPage = () => {
   
   // Generate CSV for download
   const generateCSV = () => {
-    const header = 'Date,Devotee Name,Mangla Arti,Japa,Lecture,Temple Visit\n';
+    const header = 'Date,Devotee Name,Mangla Arti,Japa,Lecture,Temple Visit,Temple Visit Type\n';
     const rows = filteredEntries.map(entry => {
-      return `${entry.date},${entry.devotee_name},${entry.mangla},${entry.japa},${entry.lecture},${entry.temple_visit}`;
+      return `${entry.date},${entry.devotee_name},${entry.mangla},${entry.japa},${entry.lecture},${entry.temple_visit},${entry.temple_visit_type}`;
     }).join('\n');
     
     const csvContent = `${header}${rows}`;
@@ -204,9 +213,9 @@ const AllEntriesPage = () => {
 
   // Generate sample CSV for download
   const downloadSampleCSV = () => {
-    const sampleData = `Date,Devotee Name,Mangla Arti,Japa,Lecture,Temple Visit
-2025-05-01,John Doe,1,1,0.5,true
-2025-05-01,Jane Smith,0.5,1,1,false`;
+    const sampleData = `Date,Devotee Name,Mangla Arti,Japa,Lecture,Temple Visit,Temple Visit Type
+2025-05-01,John Doe,1,1,0.5,true,normal
+2025-05-01,Jane Smith,0.5,1,1,true,mangla`;
     
     const blob = new Blob([sampleData], { type: 'text/csv;charset=utf-8;' });
     
@@ -217,6 +226,13 @@ const AllEntriesPage = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const getScoreColor = (score: number, templeVisitType: string, activity: 'mangla' | 'japa' | 'lecture') => {
+    if (templeVisitType === activity) return 'text-green-600';
+    if (score === 1) return 'text-gray-900';
+    if (score === 0.5) return 'text-orange-500';
+    return 'text-red-500';
   };
   
   // If user is already authenticated as admin, show entries directly
@@ -319,7 +335,7 @@ const AllEntriesPage = () => {
             <div className="space-y-4">
               <div>
                 <label htmlFor="csv-file" className="block text-sm font-medium text-gray-700 mb-1">
-                  CSV File (format: date,devotee_name,mangla,japa,lecture,temple_visit)
+                  CSV File (format: date,devotee_name,mangla,japa,lecture,temple_visit,temple_visit_type)
                 </label>
                 <input
                   type="file"
@@ -424,10 +440,22 @@ const AllEntriesPage = () => {
                         <td className={`font-medium ${entry.temple_visit ? 'text-green-600' : ''}`}>
                           {entry.devotee_name}
                         </td>
-                        <td>{entry.mangla}</td>
-                        <td>{entry.japa}</td>
-                        <td>{entry.lecture}</td>
-                        <td>{entry.temple_visit ? 'Yes' : 'No'}</td>
+                        <td className={getScoreColor(entry.mangla, entry.temple_visit_type, 'mangla')}>
+                          {entry.mangla}
+                        </td>
+                        <td className={getScoreColor(entry.japa, entry.temple_visit_type, 'japa')}>
+                          {entry.japa}
+                        </td>
+                        <td className={getScoreColor(entry.lecture, entry.temple_visit_type, 'lecture')}>
+                          {entry.lecture}
+                        </td>
+                        <td>
+                          {entry.temple_visit ? (
+                            <span className="text-green-600">
+                              {entry.temple_visit_type === 'normal' ? 'Yes' : entry.temple_visit_type}
+                            </span>
+                          ) : 'No'}
+                        </td>
                         <td className="font-medium">{entry.mangla + entry.japa + entry.lecture}/3</td>
                       </tr>
                     ))}

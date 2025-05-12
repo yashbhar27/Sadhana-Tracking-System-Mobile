@@ -17,6 +17,7 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
   const [japa, setJapa] = useState<number>(0);
   const [lecture, setLecture] = useState<number>(0);
   const [templeVisit, setTempleVisit] = useState(false);
+  const [templeVisitType, setTempleVisitType] = useState<'none' | 'normal' | 'mangla' | 'japa' | 'lecture'>('none');
   const [adminPassword, setAdminPassword] = useState('');
   const [isAuthenticating, setIsAuthenticating] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,6 +33,7 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
       setJapa(0);
       setLecture(0);
       setTempleVisit(false);
+      setTempleVisitType('none');
       
       // Check if already authenticated as admin
       if (user?.isAdmin) {
@@ -73,7 +75,15 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
     setIsSubmitting(true);
     
     try {
-      const success = await addEntry(devoteeId, date, mangla, japa, lecture, templeVisit);
+      const success = await addEntry(
+        devoteeId, 
+        date, 
+        mangla, 
+        japa, 
+        lecture, 
+        templeVisit,
+        templeVisitType
+      );
       
       if (success) {
         toast.success('Entry added successfully');
@@ -83,6 +93,7 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
         setJapa(0);
         setLecture(0);
         setTempleVisit(false);
+        setTempleVisitType('none');
       } else {
         toast.error('Failed to add entry');
       }
@@ -189,12 +200,25 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
                   <select
                     id="mangla"
                     value={mangla}
-                    onChange={(e) => setMangla(parseFloat(e.target.value))}
+                    onChange={(e) => {
+                      const value = parseFloat(e.target.value);
+                      setMangla(value);
+                      if (e.target.value.includes('T')) {
+                        setTempleVisit(true);
+                        setTempleVisitType('mangla');
+                      } else if (templeVisitType === 'mangla') {
+                        setTempleVisitType('none');
+                        setTempleVisit(false);
+                      }
+                    }}
                     className="select"
                   >
-                    <option value={1}>Present (1)</option>
-                    <option value={0.5}>Partial (0.5)</option>
                     <option value={0}>Absent (0)</option>
+                    <option value={0.5}>Partial (0.5)</option>
+                    <option value={1}>Present (1)</option>
+                    <option value="0T">Temple Absent (0)</option>
+                    <option value="0.5T">Temple Partial (0.5)</option>
+                    <option value="1T">Temple Present (1)</option>
                   </select>
                 </div>
                 
@@ -205,12 +229,25 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
                   <select
                     id="japa"
                     value={japa}
-                    onChange={(e) => setJapa(parseFloat(e.target.value))}
+                    onChange={(e) => {
+                      const value = parseFloat(e.target.value);
+                      setJapa(value);
+                      if (e.target.value.includes('T')) {
+                        setTempleVisit(true);
+                        setTempleVisitType('japa');
+                      } else if (templeVisitType === 'japa') {
+                        setTempleVisitType('none');
+                        setTempleVisit(false);
+                      }
+                    }}
                     className="select"
                   >
-                    <option value={1}>Present (1)</option>
-                    <option value={0.5}>Partial (0.5)</option>
                     <option value={0}>Absent (0)</option>
+                    <option value={0.5}>Partial (0.5)</option>
+                    <option value={1}>Present (1)</option>
+                    <option value="0T">Temple Absent (0)</option>
+                    <option value="0.5T">Temple Partial (0.5)</option>
+                    <option value="1T">Temple Present (1)</option>
                   </select>
                 </div>
                 
@@ -221,12 +258,25 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
                   <select
                     id="lecture"
                     value={lecture}
-                    onChange={(e) => setLecture(parseFloat(e.target.value))}
+                    onChange={(e) => {
+                      const value = parseFloat(e.target.value);
+                      setLecture(value);
+                      if (e.target.value.includes('T')) {
+                        setTempleVisit(true);
+                        setTempleVisitType('lecture');
+                      } else if (templeVisitType === 'lecture') {
+                        setTempleVisitType('none');
+                        setTempleVisit(false);
+                      }
+                    }}
                     className="select"
                   >
-                    <option value={1}>Present (1)</option>
-                    <option value={0.5}>Partial (0.5)</option>
                     <option value={0}>Absent (0)</option>
+                    <option value={0.5}>Partial (0.5)</option>
+                    <option value={1}>Present (1)</option>
+                    <option value="0T">Temple Absent (0)</option>
+                    <option value="0.5T">Temple Partial (0.5)</option>
+                    <option value="1T">Temple Present (1)</option>
                   </select>
                 </div>
               </div>
@@ -236,7 +286,14 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
                   <input
                     type="checkbox"
                     checked={templeVisit}
-                    onChange={(e) => setTempleVisit(e.target.checked)}
+                    onChange={(e) => {
+                      setTempleVisit(e.target.checked);
+                      if (e.target.checked) {
+                        setTempleVisitType('normal');
+                      } else if (templeVisitType === 'normal') {
+                        setTempleVisitType('none');
+                      }
+                    }}
                     className="form-checkbox h-4 w-4 text-orange-500"
                   />
                   <span className="text-sm font-medium text-gray-700">Temple Visit</span>
