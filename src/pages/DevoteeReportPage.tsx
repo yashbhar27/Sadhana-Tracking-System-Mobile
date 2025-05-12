@@ -102,9 +102,9 @@ const DevoteeReportPage = () => {
   }, [selectedDevotee, startDate, endDate, entries]);
   
   const getScoreColor = (score: number) => {
-    if (score === 1) return 'text-green-600';
-    if (score === 0.5) return 'text-orange-500';
-    return 'text-red-500';
+    if (score === 1) return 'text-gray-900';
+    if (score === 0.5) return 'text-gray-900';
+    return 'text-gray-900';
   };
   
   return (
@@ -230,7 +230,7 @@ const DevoteeReportPage = () => {
                 {reportEntries.map((entry, index) => (
                   <tr key={index}>
                     <td>{format(parseISO(entry.date), 'dd MMM yyyy')}</td>
-                    <td>{entry.temple_visit ? '✓' : '-'}</td>
+                    <td>{entry.temple_visit ? 'YES' : 'NO'}</td>
                     <td className={getScoreColor(entry.mangla)}>{entry.mangla}</td>
                     <td className={getScoreColor(entry.japa)}>{entry.japa}</td>
                     <td className={getScoreColor(entry.lecture)}>{entry.lecture}</td>

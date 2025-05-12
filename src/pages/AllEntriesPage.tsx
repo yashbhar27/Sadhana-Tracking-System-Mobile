@@ -230,9 +230,7 @@ const AllEntriesPage = () => {
 
   const getScoreColor = (score: number, templeVisitType: string, activity: 'mangla' | 'japa' | 'lecture') => {
     if (templeVisitType === activity) return 'text-green-600';
-    if (score === 1) return 'text-gray-900';
-    if (score === 0.5) return 'text-orange-500';
-    return 'text-red-500';
+    return 'text-gray-900';
   };
   
   // If user is already authenticated as admin, show entries directly
@@ -450,11 +448,7 @@ const AllEntriesPage = () => {
                           {entry.lecture}
                         </td>
                         <td>
-                          {entry.temple_visit ? (
-                            <span className="text-green-600">
-                              {entry.temple_visit_type === 'normal' ? 'Yes' : entry.temple_visit_type}
-                            </span>
-                          ) : 'No'}
+                          {entry.temple_visit ? 'YES' : 'NO'}
                         </td>
                         <td className="font-medium">{entry.mangla + entry.japa + entry.lecture}/3</td>
                       </tr>
