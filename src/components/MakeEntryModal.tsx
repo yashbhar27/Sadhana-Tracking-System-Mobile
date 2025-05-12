@@ -119,59 +119,46 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
   });
 
   const handleActivityChange = (activity: 'mangla' | 'japa' | 'lecture', value: string) => {
-    const numericValue = parseFloat(value);
+    const numericValue = parseFloat(value.replace('T', ''));
     const isTempleVisit = value.includes('T');
 
     // Update the activity value
     switch (activity) {
       case 'mangla':
         setMangla(numericValue);
-        if (isTempleVisit) {
-          setTempleVisit(true);
-          if (!templeVisitType.includes('japa') && !templeVisitType.includes('lecture')) {
-            setTempleVisitType('mangla');
-          }
-        }
         break;
       case 'japa':
         setJapa(numericValue);
-        if (isTempleVisit) {
-          setTempleVisit(true);
-          if (!templeVisitType.includes('mangla') && !templeVisitType.includes('lecture')) {
-            setTempleVisitType('japa');
-          }
-        }
         break;
       case 'lecture':
         setLecture(numericValue);
-        if (isTempleVisit) {
-          setTempleVisit(true);
-          if (!templeVisitType.includes('mangla') && !templeVisitType.includes('japa')) {
-            setTempleVisitType('lecture');
-          }
-        }
         break;
     }
 
-    // Update temple visit type based on all activities
+    // Update temple visit status and type
     if (isTempleVisit) {
-      let types = [];
-      if (activity === 'mangla' || (templeVisitType.includes('mangla') && activity !== 'mangla')) types.push('mangla');
-      if (activity === 'japa' || (templeVisitType.includes('japa') && activity !== 'japa')) types.push('japa');
-      if (activity === 'lecture' || (templeVisitType.includes('lecture') && activity !== 'lecture')) types.push('lecture');
+      setTempleVisit(true);
+      let types = templeVisitType === 'none' ? [] : templeVisitType.split('-');
       
-      if (types.length > 0) {
+      // Remove any existing activity type
+      types = types.filter(t => t !== activity);
+      // Add the new activity type
+      types.push(activity);
+      
+      // Update temple visit type
+      if (types.length === 0) {
+        setTempleVisitType('normal');
+      } else {
         setTempleVisitType(types.join('-') as any);
       }
     } else {
       // Remove this activity from temple visit type if it exists
-      const currentTypes = templeVisitType.split('-');
-      const updatedTypes = currentTypes.filter(t => t !== activity);
-      if (updatedTypes.length === 0) {
+      const types = templeVisitType.split('-').filter(t => t !== activity);
+      if (types.length === 0) {
         setTempleVisit(false);
         setTempleVisitType('none');
       } else {
-        setTempleVisitType(updatedTypes.join('-') as any);
+        setTempleVisitType(types.join('-') as any);
       }
     }
   };
