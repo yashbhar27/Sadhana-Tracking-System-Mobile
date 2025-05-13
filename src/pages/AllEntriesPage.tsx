@@ -228,9 +228,9 @@ const AllEntriesPage = () => {
     document.body.removeChild(link);
   };
 
-  const getScoreColor = (score: number, templeVisitType: string, activity: 'mangla' | 'japa' | 'lecture') => {
-    // If temple visit type matches the activity, make it green
-    if (templeVisitType === activity) {
+  const getScoreColor = (score: number, templeVisitType: string) => {
+    // If temple visit type is not 'none', make all scores green
+    if (templeVisitType !== 'none') {
       return 'text-green-600 font-medium';
     }
     return 'text-gray-900';
@@ -441,13 +441,13 @@ const AllEntriesPage = () => {
                         <td className={entry.temple_visit ? 'text-green-600 font-medium' : ''}>
                           {entry.devotee_name}
                         </td>
-                        <td className={getScoreColor(entry.mangla, entry.temple_visit_type, 'mangla')}>
+                        <td className={getScoreColor(entry.mangla, entry.temple_visit_type)}>
                           {entry.mangla}
                         </td>
-                        <td className={getScoreColor(entry.japa, entry.temple_visit_type, 'japa')}>
+                        <td className={getScoreColor(entry.japa, entry.temple_visit_type)}>
                           {entry.japa}
                         </td>
-                        <td className={getScoreColor(entry.lecture, entry.temple_visit_type, 'lecture')}>
+                        <td className={getScoreColor(entry.lecture, entry.temple_visit_type)}>
                           {entry.lecture}
                         </td>
                         <td>
