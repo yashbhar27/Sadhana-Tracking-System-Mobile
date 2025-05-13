@@ -88,13 +88,23 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
     
     try {
       // Determine temple visit type based on selected activities
-      let visitType = 'none';
+      let visitType: 'none' | 'normal' | 'mangla' | 'japa' | 'lecture' = 'none';
+      
       if (templeVisit) {
-        const types = [];
-        if (templeVisitTypes.mangla) types.push('mangla');
-        if (templeVisitTypes.japa) types.push('japa');
-        if (templeVisitTypes.lecture) types.push('lecture');
-        visitType = types.length > 0 ? types.join('-') : 'normal';
+        // If temple visit is true but no specific type is selected, use 'normal'
+        if (!templeVisitTypes.mangla && !templeVisitTypes.japa && !templeVisitTypes.lecture) {
+          visitType = 'normal';
+        }
+        // If multiple types are selected, prioritize in order: mangla > japa > lecture
+        else if (templeVisitTypes.mangla) {
+          visitType = 'mangla';
+        }
+        else if (templeVisitTypes.japa) {
+          visitType = 'japa';
+        }
+        else if (templeVisitTypes.lecture) {
+          visitType = 'lecture';
+        }
       }
 
       const success = await addEntry(
@@ -104,7 +114,7 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
         japa, 
         lecture, 
         templeVisit,
-        visitType as any
+        visitType
       );
       
       if (success) {
