@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { LogIn, KeyRound, Loader2, Shield } from 'lucide-react';
+import { LogIn, KeyRound, Loader2, Shield, Users, Key, Lock, Trash2, Edit, ChevronDown, ChevronUp } from 'lucide-react';
 import toast from 'react-hot-toast';
 import supabase from '../lib/supabase';
 
@@ -25,6 +25,7 @@ const LoginPage = () => {
   const [newAdminName, setNewAdminName] = useState('');
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [deleteConfirmPassword, setDeleteConfirmPassword] = useState('');
+  const [expandedDevotees, setExpandedDevotees] = useState<string[]>([]);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -160,6 +161,14 @@ const LoginPage = () => {
     }
   };
 
+  const toggleDevoteesList = (systemId: string) => {
+    setExpandedDevotees(prev => 
+      prev.includes(systemId) 
+        ? prev.filter(id => id !== systemId)
+        : [...prev, systemId]
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-400 to-orange-600 flex items-center justify-center p-4">
       <button
@@ -208,82 +217,48 @@ const LoginPage = () => {
               </div>
             ) : (
               <div className="space-y-6">
-                <div className="overflow-x-auto">
-                  <table className="table">
-                    <thead>
-                      <tr>
-                        <th>System Name</th>
-                        <th>Auth Code</th>
-                        <th>Admin Password</th>
-                        <th>Admin Name</th>
-                        <th>Master Key</th>
-                        <th>Devotees</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {systems.map((system) => (
-                        <tr key={system.id}>
-                          <td>{system.name}</td>
-                          <td>{system.auth_code}</td>
-                          <td>{system.admin_password}</td>
-                          <td>
-                            {editingSystem === system.id ? (
-                              <div className="flex gap-2">
-                                <input
-                                  type="text"
-                                  value={newAdminName}
-                                  onChange={(e) => setNewAdminName(e.target.value)}
-                                  className="input input-sm"
-                                  placeholder="New admin name"
-                                />
-                                <button
-                                  onClick={() => handleUpdateAdminName(system.id)}
-                                  className="btn btn-sm btn-primary"
-                                >
-                                  Save
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    setEditingSystem(null);
-                                    setNewAdminName('');
-                                  }}
-                                  className="btn btn-sm btn-outline"
-                                >
-                                  Cancel
-                                </button>
-                              </div>
-                            ) : (
-                              <span>{system.admin_name || 'Not set'}</span>
-                            )}
-                          </td>
-                          <td>{system.master_key}</td>
-                          <td>
-                            <details className="cursor-pointer">
-                              <summary>{system.devotees?.length || 0} devotees</summary>
-                              <ul className="mt-2 text-sm">
-                                {system.devotees?.map((devotee, idx) => (
-                                  <li key={idx} className="flex items-center gap-2">
-                                    <span>{devotee.name}</span>
-                                    <span className={`text-xs px-1 rounded ${
-                                      devotee.is_resident 
-                                        ? 'bg-green-100 text-green-800' 
-                                        : 'bg-blue-100 text-blue-800'
-                                    }`}>
-                                      {devotee.is_resident ? 'R' : 'NR'}
-                                    </span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </details>
-                          </td>
-                          <td>
+                <div className="grid grid-cols-1 gap-6">
+                  {systems.map((system) => (
+                    <div key={system.id} className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h3 className="text-xl font-semibold text-gray-800">{system.name}</h3>
+                          <p className="text-sm text-gray-500">Master Key: {system.master_key}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          {editingSystem === system.id ? (
                             <div className="flex gap-2">
+                              <input
+                                type="text"
+                                value={newAdminName}
+                                onChange={(e) => setNewAdminName(e.target.value)}
+                                className="input input-sm"
+                                placeholder="New admin name"
+                              />
+                              <button
+                                onClick={() => handleUpdateAdminName(system.id)}
+                                className="btn btn-sm btn-primary"
+                              >
+                                Save
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setEditingSystem(null);
+                                  setNewAdminName('');
+                                }}
+                                className="btn btn-sm btn-outline"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          ) : (
+                            <>
                               <button
                                 onClick={() => setEditingSystem(system.id)}
-                                className="text-blue-600 hover:text-blue-800"
+                                className="btn btn-sm btn-outline flex items-center gap-1"
                               >
-                                Edit Admin
+                                <Edit size={14} />
+                                Edit
                               </button>
                               {confirmDelete === system.id ? (
                                 <div className="flex items-center gap-2">
@@ -313,17 +288,72 @@ const LoginPage = () => {
                               ) : (
                                 <button
                                   onClick={() => setConfirmDelete(system.id)}
-                                  className="text-red-600 hover:text-red-800"
+                                  className="btn btn-sm btn-error flex items-center gap-1"
                                 >
+                                  <Trash2 size={14} />
                                   Delete
                                 </button>
                               )}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Key size={16} className="text-gray-400" />
+                            <span className="text-sm font-medium">Auth Code:</span>
+                            <span className="text-sm">{system.auth_code}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Lock size={16} className="text-gray-400" />
+                            <span className="text-sm font-medium">Admin Password:</span>
+                            <span className="text-sm">{system.admin_password}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Users size={16} className="text-gray-400" />
+                            <span className="text-sm font-medium">Admin Name:</span>
+                            <span className="text-sm">{system.admin_name || 'Not set'}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="border-t pt-4">
+                        <button
+                          onClick={() => toggleDevoteesList(system.id)}
+                          className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-800"
+                        >
+                          {expandedDevotees.includes(system.id) ? (
+                            <ChevronUp size={16} />
+                          ) : (
+                            <ChevronDown size={16} />
+                          )}
+                          Devotees ({system.devotees?.length || 0})
+                        </button>
+                        
+                        {expandedDevotees.includes(system.id) && (
+                          <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                            {system.devotees?.map((devotee, idx) => (
+                              <div
+                                key={idx}
+                                className="flex items-center gap-2 p-2 bg-gray-50 rounded-md"
+                              >
+                                <span className="text-sm">{devotee.name}</span>
+                                <span className={`text-xs px-1.5 py-0.5 rounded ${
+                                  devotee.is_resident 
+                                    ? 'bg-green-100 text-green-800' 
+                                    : 'bg-blue-100 text-blue-800'
+                                }`}>
+                                  {devotee.is_resident ? 'R' : 'NR'}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
