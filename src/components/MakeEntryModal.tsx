@@ -17,7 +17,15 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
   const [japa, setJapa] = useState<number>(0);
   const [lecture, setLecture] = useState<number>(0);
   const [templeVisit, setTempleVisit] = useState(false);
-  const [templeVisitType, setTempleVisitType] = useState<'none' | 'normal' | 'mangla' | 'japa' | 'lecture'>('none');
+  const [templeVisitTypes, setTempleVisitTypes] = useState<{
+    mangla: boolean;
+    japa: boolean;
+    lecture: boolean;
+  }>({
+    mangla: false,
+    japa: false,
+    lecture: false
+  });
   const [adminPassword, setAdminPassword] = useState('');
   const [isAuthenticating, setIsAuthenticating] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -33,7 +41,11 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
       setJapa(0);
       setLecture(0);
       setTempleVisit(false);
-      setTempleVisitType('none');
+      setTempleVisitTypes({
+        mangla: false,
+        japa: false,
+        lecture: false
+      });
       
       // Check if already authenticated as admin
       if (user?.isAdmin) {
@@ -75,6 +87,16 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
     setIsSubmitting(true);
     
     try {
+      // Determine temple visit type based on selected activities
+      let visitType = 'none';
+      if (templeVisit) {
+        const types = [];
+        if (templeVisitTypes.mangla) types.push('mangla');
+        if (templeVisitTypes.japa) types.push('japa');
+        if (templeVisitTypes.lecture) types.push('lecture');
+        visitType = types.length > 0 ? types.join('-') : 'normal';
+      }
+
       const success = await addEntry(
         devoteeId, 
         date, 
@@ -82,7 +104,7 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
         japa, 
         lecture, 
         templeVisit,
-        templeVisitType
+        visitType as any
       );
       
       if (success) {
@@ -93,7 +115,11 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
         setJapa(0);
         setLecture(0);
         setTempleVisit(false);
-        setTempleVisitType('none');
+        setTempleVisitTypes({
+          mangla: false,
+          japa: false,
+          lecture: false
+        });
       } else {
         toast.error('Failed to add entry');
       }
@@ -104,19 +130,6 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
       setIsSubmitting(false);
     }
   };
-
-  if (!isOpen) return null;
-
-  // If user is already verified as admin, skip password prompt
-  const showPasswordScreen = isAuthenticating && !user?.isAdmin;
-
-  // Sort devotees: residents first, then non-residents
-  const sortedDevotees = [...devotees].sort((a, b) => {
-    if (a.is_resident === b.is_resident) {
-      return a.name.localeCompare(b.name);
-    }
-    return a.is_resident ? -1 : 1;
-  });
 
   const handleActivityChange = (activity: 'mangla' | 'japa' | 'lecture', value: string) => {
     const numericValue = parseFloat(value);
@@ -136,14 +149,27 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
     }
 
     // Update temple visit status and type
-    if (isTempleVisit) {
-      setTempleVisit(true);
-      setTempleVisitType(activity);
-    } else {
-      setTempleVisit(false);
-      setTempleVisitType('none');
-    }
+    setTempleVisitTypes(prev => ({
+      ...prev,
+      [activity]: isTempleVisit
+    }));
+
+    // Update overall temple visit status
+    setTempleVisit(isTempleVisit || Object.values(templeVisitTypes).some(v => v));
   };
+
+  if (!isOpen) return null;
+
+  // If user is already verified as admin, skip password prompt
+  const showPasswordScreen = isAuthenticating && !user?.isAdmin;
+
+  // Sort devotees: residents first, then non-residents
+  const sortedDevotees = [...devotees].sort((a, b) => {
+    if (a.is_resident === b.is_resident) {
+      return a.name.localeCompare(b.name);
+    }
+    return a.is_resident ? -1 : 1;
+  });
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -226,7 +252,7 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
                   </label>
                   <select
                     id="mangla"
-                    value={`${mangla}${templeVisitType === 'mangla' ? 'T' : ''}`}
+                    value={`${mangla}${templeVisitTypes.mangla ? 'T' : ''}`}
                     onChange={(e) => handleActivityChange('mangla', e.target.value)}
                     className="select"
                   >
@@ -245,7 +271,7 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
                   </label>
                   <select
                     id="japa"
-                    value={`${japa}${templeVisitType === 'japa' ? 'T' : ''}`}
+                    value={`${japa}${templeVisitTypes.japa ? 'T' : ''}`}
                     onChange={(e) => handleActivityChange('japa', e.target.value)}
                     className="select"
                   >
@@ -264,7 +290,7 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
                   </label>
                   <select
                     id="lecture"
-                    value={`${lecture}${templeVisitType === 'lecture' ? 'T' : ''}`}
+                    value={`${lecture}${templeVisitTypes.lecture ? 'T' : ''}`}
                     onChange={(e) => handleActivityChange('lecture', e.target.value)}
                     className="select"
                   >
