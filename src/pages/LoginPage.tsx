@@ -79,8 +79,17 @@ const LoginPage = () => {
         `)
         .order('created_at', { ascending: false });
 
-      if (systemsError) throw systemsError;
-      setSystems(systemsData || []);
+      if (systemsError) {
+        console.error('Error fetching systems:', systemsError);
+        throw systemsError;
+      }
+
+      if (!systemsData) {
+        throw new Error('No data received from Supabase');
+      }
+
+      setSystems(systemsData);
+      toast.success('Systems data loaded successfully');
       
     } catch (error) {
       console.error('Error fetching systems:', error);
@@ -191,7 +200,14 @@ const LoginPage = () => {
                   className="btn btn-primary w-full"
                   disabled={isLoading}
                 >
-                  {isLoading ? 'Authenticating...' : 'Access Panel'}
+                  {isLoading ? (
+                    <span className="flex items-center justify-center">
+                      <Loader2 size={18} className="animate-spin mr-2" />
+                      Loading Systems...
+                    </span>
+                  ) : (
+                    'Access Panel'
+                  )}
                 </button>
               </div>
             ) : (

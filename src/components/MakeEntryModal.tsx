@@ -119,7 +119,7 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
   });
 
   const handleActivityChange = (activity: 'mangla' | 'japa' | 'lecture', value: string) => {
-    const numericValue = parseFloat(value.replace('T', ''));
+    const numericValue = parseFloat(value);
     const isTempleVisit = value.includes('T');
 
     // Update the activity value
@@ -138,28 +138,10 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
     // Update temple visit status and type
     if (isTempleVisit) {
       setTempleVisit(true);
-      let types = templeVisitType === 'none' ? [] : templeVisitType.split('-');
-      
-      // Remove any existing activity type
-      types = types.filter(t => t !== activity);
-      // Add the new activity type
-      types.push(activity);
-      
-      // Update temple visit type
-      if (types.length === 0) {
-        setTempleVisitType('normal');
-      } else {
-        setTempleVisitType(types.join('-') as any);
-      }
+      setTempleVisitType(activity);
     } else {
-      // Remove this activity from temple visit type if it exists
-      const types = templeVisitType.split('-').filter(t => t !== activity);
-      if (types.length === 0) {
-        setTempleVisit(false);
-        setTempleVisitType('none');
-      } else {
-        setTempleVisitType(types.join('-') as any);
-      }
+      setTempleVisit(false);
+      setTempleVisitType('none');
     }
   };
 
@@ -244,7 +226,7 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
                   </label>
                   <select
                     id="mangla"
-                    value={`${mangla}${templeVisitType.includes('mangla') ? 'T' : ''}`}
+                    value={`${mangla}${templeVisitType === 'mangla' ? 'T' : ''}`}
                     onChange={(e) => handleActivityChange('mangla', e.target.value)}
                     className="select"
                   >
@@ -263,7 +245,7 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
                   </label>
                   <select
                     id="japa"
-                    value={`${japa}${templeVisitType.includes('japa') ? 'T' : ''}`}
+                    value={`${japa}${templeVisitType === 'japa' ? 'T' : ''}`}
                     onChange={(e) => handleActivityChange('japa', e.target.value)}
                     className="select"
                   >
@@ -282,7 +264,7 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
                   </label>
                   <select
                     id="lecture"
-                    value={`${lecture}${templeVisitType.includes('lecture') ? 'T' : ''}`}
+                    value={`${lecture}${templeVisitType === 'lecture' ? 'T' : ''}`}
                     onChange={(e) => handleActivityChange('lecture', e.target.value)}
                     className="select"
                   >
@@ -294,25 +276,6 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
                     <option value="1T">Temple Present (1)</option>
                   </select>
                 </div>
-              </div>
-
-              <div>
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={templeVisit}
-                    onChange={(e) => {
-                      setTempleVisit(e.target.checked);
-                      if (e.target.checked && templeVisitType === 'none') {
-                        setTempleVisitType('normal');
-                      } else if (!e.target.checked) {
-                        setTempleVisitType('none');
-                      }
-                    }}
-                    className="form-checkbox h-4 w-4 text-orange-500"
-                  />
-                  <span className="text-sm font-medium text-gray-700">Temple Visit</span>
-                </label>
               </div>
               
               <div className="flex justify-end space-x-2">
