@@ -313,6 +313,30 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
                   </select>
                 </div>
               </div>
+
+              <div>
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={templeVisit}
+                    onChange={(e) => {
+                      setTempleVisit(e.target.checked);
+                      if (!e.target.checked) {
+                        setTempleVisitTypes({
+                          mangla: false,
+                          japa: false,
+                          lecture: false
+                        });
+                      }
+                    }}
+                    className="form-checkbox h-4 w-4 text-orange-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Temple Visit</span>
+                </label>
+                <p className="mt-1 text-sm text-gray-500">
+                  Check this if the devotee visited temple but didn't participate in activities
+                </p>
+              </div>
               
               <div className="flex justify-end space-x-2">
                 <button 

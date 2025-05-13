@@ -229,8 +229,8 @@ const AllEntriesPage = () => {
   };
 
   const getScoreColor = (score: number, templeVisitType: string, activity: 'mangla' | 'japa' | 'lecture') => {
-    const types = templeVisitType.split('-');
-    if (types.includes(activity)) return 'text-green-600 font-medium';
+    // If it's a temple visit with the specific activity type, make it green
+    if (templeVisitType === activity) return 'text-green-600 font-medium';
     return 'text-gray-900';
   };
   
@@ -436,7 +436,7 @@ const AllEntriesPage = () => {
                           />
                         </td>
                         <td>{format(parseISO(entry.date), 'dd MMM yyyy')}</td>
-                        <td className={`font-medium ${entry.temple_visit ? 'text-green-600' : ''}`}>
+                        <td className={entry.temple_visit ? 'text-green-600 font-medium' : ''}>
                           {entry.devotee_name}
                         </td>
                         <td className={getScoreColor(entry.mangla, entry.temple_visit_type, 'mangla')}>
@@ -449,7 +449,7 @@ const AllEntriesPage = () => {
                           {entry.lecture}
                         </td>
                         <td>
-                          {entry.temple_visit ? 'YES' : 'NO'}
+                          {entry.temple_visit ? '✓' : ''}
                         </td>
                         <td className="font-medium">{entry.mangla + entry.japa + entry.lecture}/3</td>
                       </tr>
