@@ -1,13 +1,17 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Home, User, BarChart2, List, Settings, LogOut } from 'lucide-react';
+import { Home, User, BarChart2, List, Settings, LogOut, RefreshCw } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useSystem } from '../contexts/SystemContext';
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 
 const Navbar = () => {
   const { logout } = useAuth();
+  const { loadEntries } = useSystem();
   const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -23,12 +27,24 @@ const Navbar = () => {
     navigate('/login');
   };
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await loadEntries();
+      toast.success('Data refreshed successfully');
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+      toast.error('Failed to refresh data');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   const navItems = [
     { to: '/', label: 'Home', icon: <Home size={18} /> },
     { to: '/devotee-report', label: 'Devotee Report', icon: <User size={18} /> },
     { to: '/overall-summary', label: 'Overall Summary', icon: <BarChart2 size={18} /> },
     { to: '/all-entries', label: 'All Entries', icon: <List size={18} /> },
-    { to: '/settings', label: 'Settings', icon: <Settings size={18} /> },
   ];
 
   const toggleMenu = () => {
@@ -55,12 +71,31 @@ const Navbar = () => {
               </NavLink>
             ))}
           </div>
-          <button
-            onClick={handleLogout}
-            className="flex items-center justify-center p-2 rounded-full text-orange-100 hover:bg-orange-700"
-          >
-            <LogOut size={18} />
-          </button>
+          <div className="flex space-x-2">
+            <button
+              onClick={handleRefresh}
+              className="flex items-center justify-center p-2 rounded-full text-orange-100 hover:bg-orange-700"
+              disabled={isRefreshing}
+            >
+              <RefreshCw size={18} className={isRefreshing ? 'animate-spin' : ''} />
+            </button>
+            <NavLink
+              to="/settings"
+              className={({ isActive }) => 
+                `flex items-center justify-center p-2 rounded-full ${
+                  isActive ? 'bg-orange-700 text-white' : 'text-orange-100 hover:bg-orange-700'
+                }`
+              }
+            >
+              <Settings size={18} />
+            </NavLink>
+            <button
+              onClick={handleLogout}
+              className="flex items-center justify-center p-2 rounded-full text-orange-100 hover:bg-orange-700"
+            >
+              <LogOut size={18} />
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -84,13 +119,34 @@ const Navbar = () => {
             <span className="ml-2">{item.label}</span>
           </NavLink>
         ))}
-        <button
-          onClick={handleLogout}
-          className="ml-auto flex items-center px-3 py-2 rounded-md text-orange-50 hover:bg-orange-700 hover:text-white transition-colors"
-        >
-          <LogOut size={18} />
-          <span className="ml-2">Logout</span>
-        </button>
+        <div className="ml-auto flex space-x-2">
+          <button
+            onClick={handleRefresh}
+            className="flex items-center px-3 py-2 rounded-md text-orange-50 hover:bg-orange-700 hover:text-white transition-colors"
+            disabled={isRefreshing}
+          >
+            <RefreshCw size={18} className={`mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span>Refresh</span>
+          </button>
+          <NavLink
+            to="/settings"
+            className={({ isActive }) => 
+              `flex items-center px-3 py-2 rounded-md transition-colors ${
+                isActive ? 'bg-orange-700 text-white' : 'text-orange-50 hover:bg-orange-700 hover:text-white'
+              }`
+            }
+          >
+            <Settings size={18} />
+            <span className="ml-2">Settings</span>
+          </NavLink>
+          <button
+            onClick={handleLogout}
+            className="flex items-center px-3 py-2 rounded-md text-orange-50 hover:bg-orange-700 hover:text-white transition-colors"
+          >
+            <LogOut size={18} />
+            <span className="ml-2">Logout</span>
+          </button>
+        </div>
       </div>
     </div>
   );

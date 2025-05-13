@@ -19,7 +19,7 @@ const NewSystemPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (masterKey !== 'SALWGP108') {
+    if (masterKey !== 'CNSWGP108') {
       toast.error('Invalid master key');
       return;
     }
@@ -119,7 +119,6 @@ const NewSystemPage = () => {
       if (data) {
         toast.success('Tracking system created successfully!');
         toast.success(`Your authentication code is: ${authCode}`);
-        toast.success('The master key for this system will be available in the super admin panel');
         
         // Navigate to login page after a short delay
         setTimeout(() => {
