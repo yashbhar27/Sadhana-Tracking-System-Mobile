@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { useSystem } from '../contexts/SystemContext';
 import { useAuth } from '../contexts/AuthContext';
-import { FileText, Upload, Filter, X, Download, Trash2 } from 'lucide-react';
+import { FileText, Upload, Filter, X, Download, Trash2, RefreshCw } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import toast from 'react-hot-toast';
-import supabase from '../lib/supabase';
 
 interface CSVEntry {
   date: string;
@@ -17,7 +16,7 @@ interface CSVEntry {
 }
 
 const AllEntriesPage = () => {
-  const { entries, devotees, addEntry, deleteEntry } = useSystem();
+  const { entries, devotees, addEntry, deleteEntry, loadEntries } = useSystem();
   const { user, checkAdminPassword } = useAuth();
   const [adminPassword, setAdminPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -26,6 +25,7 @@ const AllEntriesPage = () => {
   const [filter, setFilter] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [selectedEntries, setSelectedEntries] = useState<string[]>([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   const authenticate = async () => {
     if (!adminPassword.trim()) {
@@ -47,6 +47,19 @@ const AllEntriesPage = () => {
       toast.error('An unexpected error occurred');
     } finally {
       setIsAuthenticating(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await loadEntries();
+      toast.success('Entries refreshed successfully');
+    } catch (error) {
+      console.error('Error refreshing entries:', error);
+      toast.error('Failed to refresh entries');
+    } finally {
+      setIsRefreshing(false);
     }
   };
   
@@ -288,7 +301,7 @@ const AllEntriesPage = () => {
         <>
           <div className="card mb-6 animate-fade-in">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div className="relative">
+              <div className="relative flex-1">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Filter size={16} className="text-gray-400" />
                 </div>
@@ -310,6 +323,14 @@ const AllEntriesPage = () => {
               </div>
               
               <div className="flex gap-2">
+                <button
+                  onClick={handleRefresh}
+                  className="btn btn-outline"
+                  disabled={isRefreshing}
+                >
+                  <RefreshCw size={16} className={`mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  Refresh
+                </button>
                 <button 
                   onClick={generateCSV}
                   className="btn btn-secondary"
