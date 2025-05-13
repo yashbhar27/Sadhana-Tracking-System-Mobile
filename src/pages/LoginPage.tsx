@@ -84,11 +84,7 @@ const LoginPage = () => {
         throw systemsError;
       }
 
-      if (!systemsData) {
-        throw new Error('No data received from Supabase');
-      }
-
-      setSystems(systemsData);
+      setSystems(systemsData || []);
       toast.success('Systems data loaded successfully');
       
     } catch (error) {

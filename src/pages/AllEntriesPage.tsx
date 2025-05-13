@@ -229,8 +229,10 @@ const AllEntriesPage = () => {
   };
 
   const getScoreColor = (score: number, templeVisitType: string, activity: 'mangla' | 'japa' | 'lecture') => {
-    // If it's a temple visit with the specific activity type, make it green
-    if (templeVisitType === activity) return 'text-green-600 font-medium';
+    // If temple visit type matches the activity, make it green
+    if (templeVisitType === activity) {
+      return 'text-green-600 font-medium';
+    }
     return 'text-gray-900';
   };
   
