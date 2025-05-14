@@ -19,7 +19,8 @@ interface ReportEntry {
   mangla: number;
   japa: number;
   lecture: number;
-  is_temple_attendance: boolean;
+  temple_visit: boolean;
+  temple_visit_type: string;
   dailyTotal: number;
 }
 
@@ -57,14 +58,15 @@ const DevoteeReportPage = () => {
       totalMangla += entry.mangla;
       totalJapa += entry.japa;
       totalLecture += entry.lecture;
-      if (entry.is_temple_attendance) templeVisits++;
+      if (entry.temple_visit) templeVisits++;
       
       reportData.push({
         date: entry.date,
         mangla: entry.mangla,
         japa: entry.japa,
         lecture: entry.lecture,
-        is_temple_attendance: entry.is_temple_attendance,
+        temple_visit: entry.temple_visit,
+        temple_visit_type: entry.temple_visit_type,
         dailyTotal: entry.mangla + entry.japa + entry.lecture
       });
     });
@@ -100,9 +102,19 @@ const DevoteeReportPage = () => {
       generateReport();
     }
   }, [selectedDevotee, startDate, endDate, entries]);
+  
+  const getNameColor = (entry: ReportEntry) => {
+    if (entry.temple_visit_type !== 'none' || entry.temple_visit) {
+      return 'text-green-600 font-medium';
+    }
+    return '';
+  };
 
-  const formatScore = (score: number, isTemple: boolean) => {
-    return isTemple ? `${score}ᵗ` : score.toString();
+  const getScoreColor = (score: number, entry: ReportEntry) => {
+    if (entry.temple_visit_type !== 'none') {
+      return 'text-green-600 font-medium';
+    }
+    return 'text-gray-900';
   };
   
   return (
@@ -217,6 +229,7 @@ const DevoteeReportPage = () => {
               <thead>
                 <tr>
                   <th>Date</th>
+                  <th>Temple Visit</th>
                   <th>Mangla Arti</th>
                   <th>Japa</th>
                   <th>Lecture</th>
@@ -227,9 +240,10 @@ const DevoteeReportPage = () => {
                 {reportEntries.map((entry, index) => (
                   <tr key={index}>
                     <td>{format(parseISO(entry.date), 'dd MMM yyyy')}</td>
-                    <td>{formatScore(entry.mangla, entry.is_temple_attendance)}</td>
-                    <td>{formatScore(entry.japa, entry.is_temple_attendance)}</td>
-                    <td>{formatScore(entry.lecture, entry.is_temple_attendance)}</td>
+                    <td>{entry.temple_visit ? 'YES' : 'NO'}</td>
+                    <td className={getScoreColor(entry.mangla, entry)}>{entry.mangla}</td>
+                    <td className={getScoreColor(entry.japa, entry)}>{entry.japa}</td>
+                    <td className={getScoreColor(entry.lecture, entry)}>{entry.lecture}</td>
                     <td className="font-medium">{entry.dailyTotal}/3</td>
                   </tr>
                 ))}

@@ -11,7 +11,8 @@ interface CSVEntry {
   mangla: number;
   japa: number;
   lecture: number;
-  is_temple_attendance: boolean;
+  temple_visit: boolean;
+  temple_visit_type: string;
 }
 
 const AllEntriesPage = () => {
@@ -137,7 +138,7 @@ const AllEntriesPage = () => {
       
       //Process each row
       for (const row of dataRows) {
-        const [date, devotee_name, mangla_str, japa_str, lecture_str, is_temple_str] = row.split(',').map(c => c.trim());
+        const [date, devotee_name, mangla_str, japa_str, lecture_str, temple_visit_str, temple_visit_type] = row.split(',').map(c => c.trim());
         
         // Find devotee by name
         const devotee = devotees.find(d => d.name.toLowerCase() === devotee_name.toLowerCase());
@@ -151,7 +152,7 @@ const AllEntriesPage = () => {
         const mangla = parseFloat(mangla_str);
         const japa = parseFloat(japa_str);
         const lecture = parseFloat(lecture_str);
-        const is_temple_attendance = is_temple_str?.toLowerCase() === 'true';
+        const temple_visit = temple_visit_str?.toLowerCase() === 'true';
         
         // Validate values
         if (![0, 0.5, 1].includes(mangla) || ![0, 0.5, 1].includes(japa) || ![0, 0.5, 1].includes(lecture)) {
@@ -166,8 +167,9 @@ const AllEntriesPage = () => {
             date, 
             mangla, 
             japa, 
-            lecture,
-            is_temple_attendance
+            lecture, 
+            temple_visit,
+            temple_visit_type as 'none' | 'normal' | 'mangla' | 'japa' | 'lecture'
           );
           if (success) {
             successCount++;
@@ -206,9 +208,9 @@ const AllEntriesPage = () => {
   
   // Generate CSV for download
   const generateCSV = () => {
-    const header = 'Date,Devotee Name,Mangla Arti,Japa,Lecture,Temple Attendance\n';
+    const header = 'Date,Devotee Name,Mangla Arti,Japa,Lecture,Temple Visit,Temple Visit Type\n';
     const rows = filteredEntries.map(entry => {
-      return `${entry.date},${entry.devotee_name},${entry.mangla},${entry.japa},${entry.lecture},${entry.is_temple_attendance}`;
+      return `${entry.date},${entry.devotee_name},${entry.mangla},${entry.japa},${entry.lecture},${entry.temple_visit},${entry.temple_visit_type}`;
     }).join('\n');
     
     const csvContent = `${header}${rows}`;
@@ -224,9 +226,9 @@ const AllEntriesPage = () => {
 
   // Generate sample CSV for download
   const downloadSampleCSV = () => {
-    const sampleData = `Date,Devotee Name,Mangla Arti,Japa,Lecture,Temple Attendance
-2025-05-01,John Doe,1,1,0.5,true
-2025-05-01,Jane Smith,0.5,1,1,false`;
+    const sampleData = `Date,Devotee Name,Mangla Arti,Japa,Lecture,Temple Visit,Temple Visit Type
+2025-05-01,John Doe,1,1,0.5,true,normal
+2025-05-01,Jane Smith,0.5,1,1,true,mangla`;
     
     const blob = new Blob([sampleData], { type: 'text/csv;charset=utf-8;' });
     
@@ -239,14 +241,20 @@ const AllEntriesPage = () => {
     document.body.removeChild(link);
   };
 
-  const formatScore = (score: number, isTemple: boolean) => {
-    return isTemple ? `${score}ᵗ` : score.toString();
-  };
-
   const getNameColor = (entry: any) => {
-    return entry.is_temple_attendance ? 'text-green-600 font-medium' : '';
+    if (entry.temple_visit_type !== 'none' || entry.temple_visit) {
+      return 'text-green-600 font-medium';
+    }
+    return '';
   };
 
+  const getScoreColor = (score: number, entry: any) => {
+    if (entry.temple_visit_type !== 'none') {
+      return 'text-green-600 font-medium';
+    }
+    return 'text-gray-900';
+  };
+  
   // If user is already authenticated as admin, show entries directly
   const showAuthForm = !isAuthenticated && !user?.isAdmin;
   
@@ -355,7 +363,7 @@ const AllEntriesPage = () => {
             <div className="space-y-4">
               <div>
                 <label htmlFor="csv-file" className="block text-sm font-medium text-gray-700 mb-1">
-                  CSV File (format: date,devotee_name,mangla,japa,lecture,temple_attendance)
+                  CSV File (format: date,devotee_name,mangla,japa,lecture,temple_visit,temple_visit_type)
                 </label>
                 <input
                   type="file"
@@ -435,6 +443,7 @@ const AllEntriesPage = () => {
                       <th>Mangla Arti</th>
                       <th>Japa</th>
                       <th>Lecture</th>
+                      <th>Temple Visit</th>
                       <th>Total</th>
                     </tr>
                   </thead>
@@ -459,9 +468,18 @@ const AllEntriesPage = () => {
                         <td className={getNameColor(entry)}>
                           {entry.devotee_name}
                         </td>
-                        <td>{formatScore(entry.mangla, entry.is_temple_attendance)}</td>
-                        <td>{formatScore(entry.japa, entry.is_temple_attendance)}</td>
-                        <td>{formatScore(entry.lecture, entry.is_temple_attendance)}</td>
+                        <td className={getScoreColor(entry.mangla, entry)}>
+                          {entry.mangla}
+                        </td>
+                        <td className={getScoreColor(entry.japa, entry)}>
+                          {entry.japa}
+                        </td>
+                        <td className={getScoreColor(entry.lecture, entry)}>
+                          {entry.lecture}
+                        </td>
+                        <td>
+                          {entry.temple_visit ? '✓' : ''}
+                        </td>
                         <td className="font-medium">{entry.mangla + entry.japa + entry.lecture}/3</td>
                       </tr>
                     ))}
