@@ -242,16 +242,13 @@ const AllEntriesPage = () => {
   };
 
   const getNameColor = (entry: any) => {
-    if (entry.temple_visit_type !== 'none' || entry.temple_visit) {
+    if (entry.temple_visit) {
       return 'text-green-600 font-medium';
     }
     return '';
   };
 
-  const getScoreColor = (score: number, entry: any) => {
-    if (entry.temple_visit_type !== 'none') {
-      return 'text-green-600 font-medium';
-    }
+  const getScoreColor = (score: number) => {
     return 'text-gray-900';
   };
   
@@ -468,13 +465,13 @@ const AllEntriesPage = () => {
                         <td className={getNameColor(entry)}>
                           {entry.devotee_name}
                         </td>
-                        <td className={getScoreColor(entry.mangla, entry)}>
+                        <td className={getScoreColor(entry.mangla)}>
                           {entry.mangla}
                         </td>
-                        <td className={getScoreColor(entry.japa, entry)}>
+                        <td className={getScoreColor(entry.japa)}>
                           {entry.japa}
                         </td>
-                        <td className={getScoreColor(entry.lecture, entry)}>
+                        <td className={getScoreColor(entry.lecture)}>
                           {entry.lecture}
                         </td>
                         <td>
