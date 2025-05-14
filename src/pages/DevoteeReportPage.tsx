@@ -3,13 +3,16 @@ import { useSystem } from '../contexts/SystemContext';
 import { Calendar, Search } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 
-interface ReportSummary {
-  manglaPercentage: string;
-  japaPercentage: string;
-  lecturePercentage: string;
+interface DevoteeSummary {
+  id: string;
+  name: string;
+  isResident: boolean;
+  manglaPercentage: number;
+  japaPercentage: number;
+  lecturePercentage: number;
   totalPoints: number;
   maxPoints: number;
-  totalPercentage: string;
+  totalPercentage: number;
   totalDays: number;
   templeVisits: number;
 }

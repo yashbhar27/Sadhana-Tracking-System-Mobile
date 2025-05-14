@@ -475,7 +475,7 @@ const AllEntriesPage = () => {
                           {entry.lecture}
                         </td>
                         <td>
-                          {entry.temple_visit ? '✓' : ''}
+                          {entry.temple_visit ? 'YES' : 'NO'}
                         </td>
                         <td className="font-medium">{entry.mangla + entry.japa + entry.lecture}/3</td>
                       </tr>
