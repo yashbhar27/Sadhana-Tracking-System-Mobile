@@ -103,9 +103,17 @@ const DevoteeReportPage = () => {
     }
   }, [selectedDevotee, startDate, endDate, entries]);
   
-  const getScoreColor = (score: number, templeVisitType: string, activity: 'mangla' | 'japa' | 'lecture') => {
-    const types = templeVisitType.split('-');
-    if (types.includes(activity)) return 'text-green-600';
+  const getNameColor = (entry: ReportEntry) => {
+    if (entry.temple_visit_type !== 'none' || entry.temple_visit) {
+      return 'text-green-600 font-medium';
+    }
+    return '';
+  };
+
+  const getScoreColor = (score: number, entry: ReportEntry) => {
+    if (entry.temple_visit_type !== 'none') {
+      return 'text-green-600 font-medium';
+    }
     return 'text-gray-900';
   };
   
@@ -233,9 +241,9 @@ const DevoteeReportPage = () => {
                   <tr key={index}>
                     <td>{format(parseISO(entry.date), 'dd MMM yyyy')}</td>
                     <td>{entry.temple_visit ? 'YES' : 'NO'}</td>
-                    <td className={getScoreColor(entry.mangla, entry.temple_visit_type, 'mangla')}>{entry.mangla}</td>
-                    <td className={getScoreColor(entry.japa, entry.temple_visit_type, 'japa')}>{entry.japa}</td>
-                    <td className={getScoreColor(entry.lecture, entry.temple_visit_type, 'lecture')}>{entry.lecture}</td>
+                    <td className={getScoreColor(entry.mangla, entry)}>{entry.mangla}</td>
+                    <td className={getScoreColor(entry.japa, entry)}>{entry.japa}</td>
+                    <td className={getScoreColor(entry.lecture, entry)}>{entry.lecture}</td>
                     <td className="font-medium">{entry.dailyTotal}/3</td>
                   </tr>
                 ))}

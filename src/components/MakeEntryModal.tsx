@@ -17,15 +17,7 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
   const [japa, setJapa] = useState<number>(0);
   const [lecture, setLecture] = useState<number>(0);
   const [templeVisit, setTempleVisit] = useState(false);
-  const [templeVisitTypes, setTempleVisitTypes] = useState<{
-    mangla: boolean;
-    japa: boolean;
-    lecture: boolean;
-  }>({
-    mangla: false,
-    japa: false,
-    lecture: false
-  });
+  const [isTempleAttendance, setIsTempleAttendance] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
   const [isAuthenticating, setIsAuthenticating] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -41,11 +33,7 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
       setJapa(0);
       setLecture(0);
       setTempleVisit(false);
-      setTempleVisitTypes({
-        mangla: false,
-        japa: false,
-        lecture: false
-      });
+      setIsTempleAttendance(false);
       
       // Check if already authenticated as admin
       if (user?.isAdmin) {
@@ -87,24 +75,13 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
     setIsSubmitting(true);
     
     try {
-      // Determine temple visit type based on selected activities
+      // Determine temple visit type based on attendance type
       let visitType: 'none' | 'normal' | 'mangla' | 'japa' | 'lecture' = 'none';
       
-      if (templeVisit) {
-        // If temple visit is true but no specific type is selected, use 'normal'
-        if (!templeVisitTypes.mangla && !templeVisitTypes.japa && !templeVisitTypes.lecture) {
-          visitType = 'normal';
-        }
-        // If multiple types are selected, prioritize in order: mangla > japa > lecture
-        else if (templeVisitTypes.mangla) {
-          visitType = 'mangla';
-        }
-        else if (templeVisitTypes.japa) {
-          visitType = 'japa';
-        }
-        else if (templeVisitTypes.lecture) {
-          visitType = 'lecture';
-        }
+      if (isTempleAttendance) {
+        visitType = 'normal';
+      } else if (templeVisit) {
+        visitType = 'normal';
       }
 
       const success = await addEntry(
@@ -113,7 +90,7 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
         mangla, 
         japa, 
         lecture, 
-        templeVisit,
+        templeVisit || isTempleAttendance,
         visitType
       );
       
@@ -125,11 +102,7 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
         setJapa(0);
         setLecture(0);
         setTempleVisit(false);
-        setTempleVisitTypes({
-          mangla: false,
-          japa: false,
-          lecture: false
-        });
+        setIsTempleAttendance(false);
       } else {
         toast.error('Failed to add entry');
       }
@@ -143,7 +116,7 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
 
   const handleActivityChange = (activity: 'mangla' | 'japa' | 'lecture', value: string) => {
     const numericValue = parseFloat(value);
-    const isTempleVisit = value.includes('T');
+    const isTemple = value.includes('T');
 
     // Update the activity value
     switch (activity) {
@@ -158,14 +131,8 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
         break;
     }
 
-    // Update temple visit status and type
-    setTempleVisitTypes(prev => ({
-      ...prev,
-      [activity]: isTempleVisit
-    }));
-
-    // Update overall temple visit status
-    setTempleVisit(isTempleVisit || Object.values(templeVisitTypes).some(v => v));
+    // Update temple attendance status
+    setIsTempleAttendance(isTemple);
   };
 
   if (!isOpen) return null;
@@ -262,13 +229,13 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
                   </label>
                   <select
                     id="mangla"
-                    value={`${mangla}${templeVisitTypes.mangla ? 'T' : ''}`}
+                    value={`${mangla}${isTempleAttendance ? 'T' : ''}`}
                     onChange={(e) => handleActivityChange('mangla', e.target.value)}
                     className="select"
                   >
-                    <option value="0">Absent (0)</option>
-                    <option value="0.5">Partial (0.5)</option>
-                    <option value="1">Present (1)</option>
+                    <option value="0">Regular Absent (0)</option>
+                    <option value="0.5">Regular Partial (0.5)</option>
+                    <option value="1">Regular Present (1)</option>
                     <option value="0T">Temple Absent (0)</option>
                     <option value="0.5T">Temple Partial (0.5)</option>
                     <option value="1T">Temple Present (1)</option>
@@ -281,13 +248,13 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
                   </label>
                   <select
                     id="japa"
-                    value={`${japa}${templeVisitTypes.japa ? 'T' : ''}`}
+                    value={`${japa}${isTempleAttendance ? 'T' : ''}`}
                     onChange={(e) => handleActivityChange('japa', e.target.value)}
                     className="select"
                   >
-                    <option value="0">Absent (0)</option>
-                    <option value="0.5">Partial (0.5)</option>
-                    <option value="1">Present (1)</option>
+                    <option value="0">Regular Absent (0)</option>
+                    <option value="0.5">Regular Partial (0.5)</option>
+                    <option value="1">Regular Present (1)</option>
                     <option value="0T">Temple Absent (0)</option>
                     <option value="0.5T">Temple Partial (0.5)</option>
                     <option value="1T">Temple Present (1)</option>
@@ -300,13 +267,13 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
                   </label>
                   <select
                     id="lecture"
-                    value={`${lecture}${templeVisitTypes.lecture ? 'T' : ''}`}
+                    value={`${lecture}${isTempleAttendance ? 'T' : ''}`}
                     onChange={(e) => handleActivityChange('lecture', e.target.value)}
                     className="select"
                   >
-                    <option value="0">Absent (0)</option>
-                    <option value="0.5">Partial (0.5)</option>
-                    <option value="1">Present (1)</option>
+                    <option value="0">Regular Absent (0)</option>
+                    <option value="0.5">Regular Partial (0.5)</option>
+                    <option value="1">Regular Present (1)</option>
                     <option value="0T">Temple Absent (0)</option>
                     <option value="0.5T">Temple Partial (0.5)</option>
                     <option value="1T">Temple Present (1)</option>
@@ -319,17 +286,9 @@ const MakeEntryModal = ({ isOpen, onClose }: MakeEntryModalProps) => {
                   <input
                     type="checkbox"
                     checked={templeVisit}
-                    onChange={(e) => {
-                      setTempleVisit(e.target.checked);
-                      if (!e.target.checked) {
-                        setTempleVisitTypes({
-                          mangla: false,
-                          japa: false,
-                          lecture: false
-                        });
-                      }
-                    }}
+                    onChange={(e) => setTempleVisit(e.target.checked)}
                     className="form-checkbox h-4 w-4 text-orange-500"
+                    disabled={isTempleAttendance}
                   />
                   <span className="text-sm font-medium text-gray-700">Temple Visit</span>
                 </label>

@@ -241,9 +241,15 @@ const AllEntriesPage = () => {
     document.body.removeChild(link);
   };
 
-  const getScoreColor = (score: number, templeVisitType: string) => {
-    // Only make scores green if they were marked with temple attendance types
-    if (templeVisitType.includes('T')) {
+  const getNameColor = (entry: any) => {
+    if (entry.temple_visit_type !== 'none' || entry.temple_visit) {
+      return 'text-green-600 font-medium';
+    }
+    return '';
+  };
+
+  const getScoreColor = (score: number, entry: any) => {
+    if (entry.temple_visit_type !== 'none') {
       return 'text-green-600 font-medium';
     }
     return 'text-gray-900';
@@ -459,16 +465,16 @@ const AllEntriesPage = () => {
                           />
                         </td>
                         <td>{format(parseISO(entry.date), 'dd MMM yyyy')}</td>
-                        <td className={entry.temple_visit ? 'text-green-600 font-medium' : ''}>
+                        <td className={getNameColor(entry)}>
                           {entry.devotee_name}
                         </td>
-                        <td className={getScoreColor(entry.mangla, entry.temple_visit_type)}>
+                        <td className={getScoreColor(entry.mangla, entry)}>
                           {entry.mangla}
                         </td>
-                        <td className={getScoreColor(entry.japa, entry.temple_visit_type)}>
+                        <td className={getScoreColor(entry.japa, entry)}>
                           {entry.japa}
                         </td>
-                        <td className={getScoreColor(entry.lecture, entry.temple_visit_type)}>
+                        <td className={getScoreColor(entry.lecture, entry)}>
                           {entry.lecture}
                         </td>
                         <td>
