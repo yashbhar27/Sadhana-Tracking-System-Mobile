@@ -405,9 +405,6 @@ const AllEntriesPage = () => {
                       <th>Lecture</th>
                       <th>Temple Visit</th>
                       <th>Total</th>
-                      {(isAuthenticated || user?.isAdmin) && (
-                        <th className="text-right">Actions</th>
-                      )}
                     </tr>
                   </thead>
                   <tbody>
@@ -444,22 +441,6 @@ const AllEntriesPage = () => {
                           {entry.temple_visit ? 'YES' : 'NO'}
                         </td>
                         <td className="font-medium">{entry.mangla + entry.japa + entry.lecture}/3</td>
-                        {(isAuthenticated || user?.isAdmin) && (
-                          <td className="text-right">
-                            <button
-                              onClick={() => {/* Add edit functionality */}}
-                              className="text-blue-600 hover:text-blue-800 mr-2"
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => {/* Add delete functionality */}}
-                              className="text-red-600 hover:text-red-800"
-                            >
-                              Delete
-                            </button>
-                          </td>
-                        )}
                       </tr>
                     ))}
                   </tbody>

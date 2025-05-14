@@ -74,10 +74,11 @@ const Navbar = () => {
           <div className="flex space-x-2">
             <button
               onClick={handleRefresh}
-              className="flex items-center justify-center p-2 rounded-full text-orange-100 hover:bg-orange-700"
+              className="flex items-center justify-center p-2 rounded-full text-orange-100 hover:bg-orange-700 relative"
               disabled={isRefreshing}
             >
               <RefreshCw size={18} className={isRefreshing ? 'animate-spin' : ''} />
+              <span className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></span>
             </button>
             <NavLink
               to="/settings"
@@ -122,11 +123,12 @@ const Navbar = () => {
         <div className="ml-auto flex space-x-2">
           <button
             onClick={handleRefresh}
-            className="flex items-center px-3 py-2 rounded-md text-orange-50 hover:bg-orange-700 hover:text-white transition-colors"
+            className="flex items-center px-3 py-2 rounded-md text-orange-50 hover:bg-orange-700 hover:text-white transition-colors relative"
             disabled={isRefreshing}
           >
             <RefreshCw size={18} className={`mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
             <span>Refresh</span>
+            <span className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></span>
           </button>
           <NavLink
             to="/settings"
