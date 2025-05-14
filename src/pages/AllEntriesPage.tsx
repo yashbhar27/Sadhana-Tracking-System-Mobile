@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useSystem } from '../contexts/SystemContext';
 import { useAuth } from '../contexts/AuthContext';
-import { FileText, Upload, Filter, X, Download, Trash2, RefreshCw } from 'lucide-react';
+import { FileText, Upload, Filter, X, Download, Trash2 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import toast from 'react-hot-toast';
 
@@ -12,11 +12,10 @@ interface CSVEntry {
   japa: number;
   lecture: number;
   temple_visit: boolean;
-  temple_visit_type: string;
 }
 
 const AllEntriesPage = () => {
-  const { entries, devotees, addEntry, deleteEntry, loadEntries } = useSystem();
+  const { entries, devotees, addEntry, deleteEntry } = useSystem();
   const { user, checkAdminPassword } = useAuth();
   const [adminPassword, setAdminPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -25,7 +24,6 @@ const AllEntriesPage = () => {
   const [filter, setFilter] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [selectedEntries, setSelectedEntries] = useState<string[]>([]);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   
   const authenticate = async () => {
     if (!adminPassword.trim()) {
@@ -47,19 +45,6 @@ const AllEntriesPage = () => {
       toast.error('An unexpected error occurred');
     } finally {
       setIsAuthenticating(false);
-    }
-  };
-
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    try {
-      await loadEntries();
-      toast.success('Entries refreshed successfully');
-    } catch (error) {
-      console.error('Error refreshing entries:', error);
-      toast.error('Failed to refresh entries');
-    } finally {
-      setIsRefreshing(false);
     }
   };
   
@@ -138,7 +123,7 @@ const AllEntriesPage = () => {
       
       //Process each row
       for (const row of dataRows) {
-        const [date, devotee_name, mangla_str, japa_str, lecture_str, temple_visit_str, temple_visit_type] = row.split(',').map(c => c.trim());
+        const [date, devotee_name, mangla_str, japa_str, lecture_str, temple_visit_str] = row.split(',').map(c => c.trim());
         
         // Find devotee by name
         const devotee = devotees.find(d => d.name.toLowerCase() === devotee_name.toLowerCase());
@@ -169,7 +154,7 @@ const AllEntriesPage = () => {
             japa, 
             lecture, 
             temple_visit,
-            temple_visit_type as 'none' | 'normal' | 'mangla' | 'japa' | 'lecture'
+            'normal'
           );
           if (success) {
             successCount++;
@@ -208,9 +193,9 @@ const AllEntriesPage = () => {
   
   // Generate CSV for download
   const generateCSV = () => {
-    const header = 'Date,Devotee Name,Mangla Arti,Japa,Lecture,Temple Visit,Temple Visit Type\n';
+    const header = 'Date,Devotee Name,Mangla Arti,Japa,Lecture,Temple Visit\n';
     const rows = filteredEntries.map(entry => {
-      return `${entry.date},${entry.devotee_name},${entry.mangla},${entry.japa},${entry.lecture},${entry.temple_visit},${entry.temple_visit_type}`;
+      return `${entry.date},${entry.devotee_name},${entry.mangla},${entry.japa},${entry.lecture},${entry.temple_visit}`;
     }).join('\n');
     
     const csvContent = `${header}${rows}`;
@@ -226,9 +211,9 @@ const AllEntriesPage = () => {
 
   // Generate sample CSV for download
   const downloadSampleCSV = () => {
-    const sampleData = `Date,Devotee Name,Mangla Arti,Japa,Lecture,Temple Visit,Temple Visit Type
-2025-05-01,John Doe,1,1,0.5,true,normal
-2025-05-01,Jane Smith,0.5,1,1,true,mangla`;
+    const sampleData = `Date,Devotee Name,Mangla Arti,Japa,Lecture,Temple Visit
+2025-05-01,John Doe,1,1,0.5,true
+2025-05-01,Jane Smith,0.5,1,1,true`;
     
     const blob = new Blob([sampleData], { type: 'text/csv;charset=utf-8;' });
     
@@ -303,64 +288,12 @@ const AllEntriesPage = () => {
       ) : (
         <>
           <div className="card mb-6 animate-fade-in">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div className="relative flex-1">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Filter size={16} className="text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Filter by name or date"
-                  value={filter}
-                  onChange={(e) => setFilter(e.target.value)}
-                  className="input pl-10"
-                />
-                {filter && (
-                  <button 
-                    onClick={() => setFilter('')}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  >
-                    <X size={16} className="text-gray-400" />
-                  </button>
-                )}
-              </div>
-              
-              <div className="flex gap-2">
-                <button
-                  onClick={handleRefresh}
-                  className="btn btn-outline"
-                  disabled={isRefreshing}
-                >
-                  <RefreshCw size={16} className={`mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-                  Refresh
-                </button>
-                <button 
-                  onClick={generateCSV}
-                  className="btn btn-secondary"
-                >
-                  <Download size={16} className="mr-2" />
-                  Export CSV
-                </button>
-                {selectedEntries.length > 0 && (
-                  <button 
-                    onClick={handleDeleteSelected}
-                    className="btn btn-error"
-                  >
-                    <Trash2 size={16} className="mr-2" />
-                    Delete Selected ({selectedEntries.length})
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-          
-          <div className="card mb-6 animate-fade-in">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Import Entries from CSV</h2>
             
             <div className="space-y-4">
               <div>
                 <label htmlFor="csv-file" className="block text-sm font-medium text-gray-700 mb-1">
-                  CSV File (format: date,devotee_name,mangla,japa,lecture,temple_visit,temple_visit_type)
+                  CSV File (format: date,devotee_name,mangla,japa,lecture,temple_visit)
                 </label>
                 <input
                   type="file"
@@ -388,7 +321,7 @@ const AllEntriesPage = () => {
                 </div>
               </div>
               
-              <div className="flex justify-end">
+              <div className="flex justify-end space-x-2">
                 <button 
                   onClick={processCSV}
                   className="btn btn-primary"
@@ -406,6 +339,13 @@ const AllEntriesPage = () => {
                     </span>
                   )}
                 </button>
+                <button 
+                  onClick={generateCSV}
+                  className="btn btn-secondary"
+                >
+                  <Download size={16} className="mr-2" />
+                  Export CSV
+                </button>
               </div>
             </div>
           </div>
@@ -415,6 +355,29 @@ const AllEntriesPage = () => {
               <FileText className="inline mr-2" size={20} />
               Entry Records
             </h2>
+
+            <div className="mb-4">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Filter size={16} className="text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Filter by name or date"
+                  value={filter}
+                  onChange={(e) => setFilter(e.target.value)}
+                  className="input pl-10"
+                />
+                {filter && (
+                  <button 
+                    onClick={() => setFilter('')}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  >
+                    <X size={16} className="text-gray-400" />
+                  </button>
+                )}
+              </div>
+            </div>
             
             {filteredEntries.length > 0 ? (
               <div className="table-container">
@@ -486,6 +449,18 @@ const AllEntriesPage = () => {
             ) : (
               <div className="bg-gray-50 p-6 text-center rounded-lg">
                 <p className="text-gray-500">No entries found</p>
+              </div>
+            )}
+
+            {selectedEntries.length > 0 && (
+              <div className="mt-4 flex justify-end">
+                <button 
+                  onClick={handleDeleteSelected}
+                  className="btn btn-error"
+                >
+                  <Trash2 size={16} className="mr-2" />
+                  Delete Selected ({selectedEntries.length})
+                </button>
               </div>
             )}
           </div>

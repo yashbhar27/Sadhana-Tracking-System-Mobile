@@ -99,7 +99,7 @@ const HomePage = () => {
             className="btn btn-secondary h-16"
           >
             <ClipboardList className="mr-2" size={20} />
-            Make Today's Entry
+            Mark Attendance
           </button>
         </div>
       </div>
