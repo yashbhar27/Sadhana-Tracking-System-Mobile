@@ -242,8 +242,8 @@ const AllEntriesPage = () => {
   };
 
   const getScoreColor = (score: number, templeVisitType: string) => {
-    // If temple visit type is not 'none', make all scores green
-    if (templeVisitType !== 'none') {
+    // Only make scores green if they were marked with temple attendance types
+    if (templeVisitType.includes('T')) {
       return 'text-green-600 font-medium';
     }
     return 'text-gray-900';
