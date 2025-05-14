@@ -24,6 +24,9 @@ const AllEntriesPage = () => {
   const [filter, setFilter] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [selectedEntries, setSelectedEntries] = useState<string[]>([]);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
   
   const authenticate = async () => {
     if (!adminPassword.trim()) {
@@ -47,6 +50,67 @@ const AllEntriesPage = () => {
       setIsAuthenticating(false);
     }
   };
+
+  const handleDeleteSelected = async () => {
+    if (!selectedEntries.length) {
+      toast.error('No entries selected');
+      return;
+    }
+
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deletePassword.trim()) {
+      toast.error('Admin password is required');
+      return;
+    }
+
+    setIsDeleting(true);
+
+    try {
+      const isAdmin = await checkAdminPassword(deletePassword);
+      if (!isAdmin) {
+        toast.error('Incorrect admin password');
+        return;
+      }
+
+      if (confirm(`Are you absolutely sure you want to delete ${selectedEntries.length} selected entries? This action cannot be undone.`)) {
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (const entryId of selectedEntries) {
+          try {
+            const success = await deleteEntry(entryId);
+            if (success) {
+              successCount++;
+            } else {
+              errorCount++;
+            }
+          } catch (error) {
+            console.error('Error deleting entry:', error);
+            errorCount++;
+          }
+        }
+
+        if (successCount > 0) {
+          toast.success(`Successfully deleted ${successCount} entries`);
+        }
+        if (errorCount > 0) {
+          toast.error(`Failed to delete ${errorCount} entries`);
+        }
+
+        setSelectedEntries([]);
+        setShowDeleteConfirm(false);
+        setDeletePassword('');
+      }
+    } catch (error) {
+      console.error('Error during deletion:', error);
+      toast.error('An unexpected error occurred');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
   
   // Filter entries based on search term
   const filteredEntries = entries.filter(entry => {
@@ -55,41 +119,6 @@ const AllEntriesPage = () => {
     const dateMatch = entry.date.includes(searchTerm);
     return !filter || devoteeNameMatch || dateMatch;
   });
-
-  const handleDeleteSelected = async () => {
-    if (!selectedEntries.length) {
-      toast.error('No entries selected');
-      return;
-    }
-
-    if (confirm(`Are you sure you want to delete ${selectedEntries.length} selected entries?`)) {
-      let successCount = 0;
-      let errorCount = 0;
-
-      for (const entryId of selectedEntries) {
-        try {
-          const success = await deleteEntry(entryId);
-          if (success) {
-            successCount++;
-          } else {
-            errorCount++;
-          }
-        } catch (error) {
-          console.error('Error deleting entry:', error);
-          errorCount++;
-        }
-      }
-
-      if (successCount > 0) {
-        toast.success(`Successfully deleted ${successCount} entries`);
-      }
-      if (errorCount > 0) {
-        toast.error(`Failed to delete ${errorCount} entries`);
-      }
-
-      setSelectedEntries([]);
-    }
-  };
   
   // Handle CSV file upload and processing
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -288,6 +317,25 @@ const AllEntriesPage = () => {
       ) : (
         <>
           <div className="card mb-6 animate-fade-in">
+            {selectedEntries.length > 0 && (
+              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Trash2 className="text-red-500 mr-2" size={20} />
+                    <span className="text-red-700 font-medium">
+                      {selectedEntries.length} entries selected
+                    </span>
+                  </div>
+                  <button 
+                    onClick={handleDeleteSelected}
+                    className="btn btn-error"
+                  >
+                    Delete Selected
+                  </button>
+                </div>
+              </div>
+            )}
+
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Import Entries from CSV</h2>
             
             <div className="space-y-4">
@@ -451,19 +499,69 @@ const AllEntriesPage = () => {
                 <p className="text-gray-500">No entries found</p>
               </div>
             )}
-
-            {selectedEntries.length > 0 && (
-              <div className="mt-4 flex justify-end">
-                <button 
-                  onClick={handleDeleteSelected}
-                  className="btn btn-error"
-                >
-                  <Trash2 size={16} className="mr-2" />
-                  Delete Selected ({selectedEntries.length})
-                </button>
-              </div>
-            )}
           </div>
+
+          {/* Delete Confirmation Modal */}
+          {showDeleteConfirm && (
+            <div className="modal-overlay">
+              <div className="modal-content w-full max-w-md">
+                <div className="modal-header">
+                  <h2 className="text-xl font-semibold text-gray-800">Confirm Deletion</h2>
+                  <button onClick={() => {
+                    setShowDeleteConfirm(false);
+                    setDeletePassword('');
+                  }} className="text-gray-500 hover:text-gray-700">
+                    <X size={20} />
+                  </button>
+                </div>
+                <div className="modal-body">
+                  <div className="space-y-4">
+                    <p className="text-red-600">
+                      You are about to delete {selectedEntries.length} entries. This action cannot be undone.
+                    </p>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Enter Admin Password to Confirm
+                      </label>
+                      <input
+                        type="password"
+                        value={deletePassword}
+                        onChange={(e) => setDeletePassword(e.target.value)}
+                        className="input"
+                        placeholder="Enter admin password"
+                      />
+                    </div>
+                    <div className="flex justify-end space-x-2">
+                      <button
+                        onClick={() => {
+                          setShowDeleteConfirm(false);
+                          setDeletePassword('');
+                        }}
+                        className="btn btn-outline"
+                        disabled={isDeleting}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={confirmDelete}
+                        className="btn btn-error"
+                        disabled={isDeleting}
+                      >
+                        {isDeleting ? (
+                          <span className="flex items-center">
+                            <span className="mr-2">Deleting</span>
+                            <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
+                          </span>
+                        ) : (
+                          'Confirm Delete'
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>
