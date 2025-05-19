@@ -8,6 +8,7 @@
     "packages/*"
   ],
   "scripts": {
+    "dev": "npm run dev -w apps/web",
     "web": "npm run dev -w apps/web",
     "mobile": "npm run start -w apps/mobile",
     "android": "npm run android -w apps/mobile",
