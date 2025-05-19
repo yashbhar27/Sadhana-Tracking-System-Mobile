@@ -161,6 +161,7 @@ const OverallSummaryPage = () => {
                   <th>Japa %</th>
                   <th>Lecture %</th>
                   <th>Total Points</th>
+                  <th>Total Days</th>
                   <th>Total %</th>
                 </tr>
               </thead>
@@ -183,6 +184,7 @@ const OverallSummaryPage = () => {
                     <td>{summary.japaPercentage.toFixed(2)}%</td>
                     <td>{summary.lecturePercentage.toFixed(2)}%</td>
                     <td>{summary.totalPoints} / {summary.maxPoints}</td>
+                    <td>{summary.totalDays}</td>
                     <td>
                       <span className={`px-2 py-1 rounded ${getPercentageColor(summary.totalPercentage)}`}>
                         {summary.totalPercentage.toFixed(2)}%
