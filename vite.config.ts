@@ -1,8 +1,8 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import path from 'path';
 
 export default defineConfig({
-  root: './apps/web',
   plugins: [react()],
   optimizeDeps: {
     exclude: ['lucide-react'],
@@ -14,5 +14,13 @@ export default defineConfig({
   server: {
     host: true,
     port: 5173
+  },
+  build: {
+    outDir: 'dist',
+    rollupOptions: {
+      input: {
+        main: './apps/web/src/main.tsx'
+      }
+    }
   }
 });
